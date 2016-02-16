@@ -1,0 +1,22 @@
+.container {
+	position: fixed;
+	top: 0;
+	left: 0;
+
+	width: 100%;
+}
+
+.panel {	
+	background-color: #FFF;	
+	color: #000;
+	margin: 0;
+	border-bottom: 1px solid #AAA;
+}
+
+.panel > div { padding: 4pt 8pt; }
+
+.panel a { color: #000; padding: 10pt 8pt; text-transform: uppercase; text-decoration: none; font-family: Tahoma; display: inline-block; }
+
+.panel a:hover { background: #EEE; }
+
+.panel a.right { float: right; }
