@@ -1,45 +1,6 @@
 <?php
-	include "login.php";
-
-	$logged_in = false;
-	$connect = null;
-
-	$dsn = null;
-	$user = null;
-	$pass = null;
-	$login_error_message = null;
-
-	if(isset($_COOKIE["login_DSN"]) && isset($_COOKIE["login_user"]) && isset($_COOKIE["login_pass"])) {
-		$dsn = unpack_cookie($_COOKIE["login_DSN"]);
-		$user = unpack_cookie($_COOKIE["login_user"]);
-		$pass = unpack_cookie($_COOKIE["login_pass"]);
-	} else {
-		if($_POST) {
-			$dsn = $_POST["database"];
-			$user = $_POST["username"];
-			$pass = $_POST["password"];
-		}
-	}
-
-	if($dsn !==null && $user !== null && $pass !== null) {
-		$result = login($dsn, $user, $pass);
-		if ($result[0]) {
-			$logged_in = true;
-			$connect = $result[1];
-		} else {
-			//we may use $result[1] as error message here
-			$login_error_message = $result[1];
-		}
-
-		if ($logged_in) {
-			if (setcookie("login_DSN", pack_cookie($dsn)) === false
-			|| setcookie("login_user", pack_cookie($user)) === false
-			|| setcookie("login_pass", pack_cookie($pass)) === false) {
-				//TODO: something was before Cookie: header
-				echo "<h1>WARNING SOMETHING WRONG WITH COOKIES</h1>";
-			}
-		}
-	}
+	include "client.php";
+	$client = new client();
 
 	//do something depending on $logged_in
 ?>
@@ -52,7 +13,7 @@
 	</head>
 	<body>
 		<?php
-			if($logged_in) {
+			if($client->logged_in()) {
 		?>
 				<div class="container">
 					<div class="panel">
@@ -86,26 +47,25 @@
 					if($_POST && isset($_POST["query"])) {
 						//TODO: odbc connect probably supports these DSNs: http://www.connectionstrings.com/oracle/
 						//may be something like "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=MyHost)(PORT=MyPort))(CONNECT_DATA=(SERVICE_NAME=MyOracleSID)));User Id=myUsername;Password=myPassword;"
-						if($connect !== false) {
-							$query = $_POST["query"];
 
-							echo "<pre class='executed_query'>".htmlspecialchars($query)."</pre>";
+						$query = $_POST["query"];
 
-							echo "<div class='query_results'>";
+						echo "<pre class='executed_query'>".htmlspecialchars($query)."</pre>";
 
-							$result = odbc_exec($connect, $query);
-							while(odbc_fetch_row($result)) {
-								$fields_count = odbc_num_fields($result);
-								for($i=1; $i<=$fields_count; ++$i) {
-									echo "<b>".odbc_result($result, $i)."</b> ";
-								}
-								echo "<br/>";
+						echo "<div class='query_results'>";
+
+						$result = odbc_exec($client->get_connection(), $query);
+						while(odbc_fetch_row($result)) {
+							$fields_count = odbc_num_fields($result);
+							for($i=1; $i<=$fields_count; ++$i) {
+								echo "<b>".odbc_result($result, $i)."</b> ";
 							}
-
-							echo "</div>";
-
-							odbc_close($connect);
+							echo "<br/>";
 						}
+
+						echo "</div>";
+
+						odbc_close($client->get_connection());
 					}
 					?>
 				</div>
@@ -121,8 +81,8 @@
 					</form>
 
 					<?php
-						if($login_error_message !== null) {
-							echo "<div class='error_message'>".$login_error_message."</div>";
+						if($client->login_error_occurred()) {
+							echo "<div class='error_message'>".$client->get_login_error_message()."</div>";
 						}
 					?>
 				</div>
