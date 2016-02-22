@@ -1,3 +1,19 @@
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+.content {
+	width: 100%;
+	margin: 50pt 0 0;
+}
+
+.content {
+	/* wide */
+	width: 80%;
+	margin: 50pt auto 0;
+}
+
 .container {
 	position: fixed;
 	top: 0;
@@ -20,3 +36,103 @@
 .panel a:hover { background: #EEE; }
 
 .panel a.right { float: right; }
+
+/* login form */
+
+.login_form {
+	max-width: 240pt;
+	padding: 10pt;
+	margin: 0 auto;
+	/*background: #FFF;*/
+	border: 1px solid #CCC;
+	margin-top: 10pt;
+}
+
+.login_form form { width: 100%; font-family: Tahoma; }
+
+.login_form form > * {
+	width: 100%;
+	margin: 2pt 0;
+}
+
+.login_form form input[type="text"], .login_form form input[type="password"] {
+	height: 16pt;
+	padding: 2pt;
+	width: calc(100% - 4pt - 2px);
+	border: 1px solid #CCC;
+}
+
+.login_form form input[type="submit"] {
+	background: #09C;
+	border: 1px solid #FFF;
+	margin-top: 4pt;
+	padding: 2pt;
+	height: 24pt;
+	display: inline-block;
+	color: #FFF;
+}
+
+.login_form form input[type="submit"]:hover {
+	background: #09F;
+}
+
+.login_form form + .error_message {
+	background: #F30;
+	border: 1px solid #FFF;
+	margin: 2pt 0;
+	margin-top: 4pt;
+	width: calc(100% - 4pt - 2px);
+	padding: 2pt;
+	display: inline-block;
+	color: #FFF;
+}
+
+/* query form */
+
+a.button {
+	display: inline-block;
+	padding: 10pt 8pt;
+	width: 100pt;
+	height: 14pt;
+
+	color: #000;
+
+	text-transform: uppercase;
+	text-decoration: none;
+	text-align: center;
+
+	font-family: Tahoma;
+	font-size: 12pt;
+}
+
+a.button:hover { background: #EEE; }
+
+.query_form {
+	width: 100%;
+	margin: auto auto;
+	padding: 0;
+}
+
+.query_form textarea {
+	padding: 4pt calc(4pt - 1px);
+	width: calc(100% - 100pt - 2*10pt - 2*4pt - 2px - 2*1px);
+	max-width: calc(100% - 100pt - 2*10pt - 2*4pt - 2px - 2*1px);
+	min-height: calc(14pt + 2*10pt - 2*4pt - 2*1px);
+	height: calc(14pt + 2*10pt - 2*4pt - 2*1px);
+	margin: 0;
+	margin-right: 2px;
+	border: 1px solid #CCC;
+}
+
+.query_form textarea + a.button { float: right; }
+
+.executed_query {
+	background: #EEE;
+	padding: 4pt;
+	margin: 6pt 0 2pt 0;
+}
+
+.query_results {
+	padding: 4pt;
+}
+
