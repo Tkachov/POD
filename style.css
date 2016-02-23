@@ -167,6 +167,30 @@ a.button:hover { background: #EEE; }
 	height: 40pt;
 }
 
+
+.entry.plus_sign {height: 60pt;}
+.entry.plus_sign a {display: block; padding: 5pt;}
+
+.plus-sign {
+	background:black;
+	width: 5pt;
+	height: 40pt;
+	position:relative;
+	margin: 5pt auto;
+}
+.plus-sign:before {
+	background:black;
+	content:"";
+	width: 40pt;
+	height: 4pt;
+	position:absolute;
+
+	top: 18pt;
+	left: -17.5pt;
+}
+
+.entry.plus_sign:hover .plus-sign, .entry.plus_sign:hover .plus-sign:before { background: #0C0; }
+
 .entry a, .entry a:visited { color: #000; }
 .entry.hidden a { color: #333; }
 .entry.hidden a:hover { color: #555; }

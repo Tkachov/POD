@@ -13,8 +13,8 @@
 		?>
 
 		<div class="entries">
-			<div class="entry">
-				<a href="?tables&action=edit"><b>Create table</b></a> <!-- TODO: new PLUS design -->
+			<div class="entry plus_sign">
+				<a href="?tables&action=edit"><div class="plus-sign"></div></a>
 				<!-- TODO: make it create new table -->
 			</div>
 
