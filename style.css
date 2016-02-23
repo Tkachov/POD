@@ -1,6 +1,7 @@
 html, body {
 	margin: 0;
 	padding: 0;
+	font-family: Tahoma;
 }
 
 .content {
@@ -136,3 +137,121 @@ a.button:hover { background: #EEE; }
 	padding: 4pt;
 }
 
+/* tables */
+
+/* list */
+
+.entries {
+	margin-top: 20px;
+	padding-bottom: 20px;
+}
+
+.entry {
+	margin-bottom: 4px;
+	font-size: 18pt;
+	height: 40pt;
+	font-family: Tahoma;
+	font-style: normal;
+	line-height: 40pt;
+}
+
+.entry:hover { background: #EEE; }
+.entry.hidden { background: #BBB; }
+.entry.hidden:hover { background: #DDD; }
+
+.entry a > b {
+	font-weight: normal; }
+
+.entry a {
+	display: block;
+	height: 40pt;
+}
+
+.entry a, .entry a:visited { color: #000; }
+.entry.hidden a { color: #333; }
+.entry.hidden a:hover { color: #555; }
+
+.entry b {
+	padding-top: 8px;
+	margin-left: 8pt;
+	float: left;
+}
+
+.entry .date {
+	float: right;
+	margin-right: 10px;
+	padding-top: 11px;
+	color: #CCC;
+}
+
+.entry.hidden .date { color: #888; }
+
+.visibility_button {
+	float: right;
+	text-align: center;
+	width: 40pt;
+	color: #000;
+}
+
+.visibility_button:hover {
+	background: #F40;
+	color: #FFF;
+	cursor: pointer;
+}
+
+.entry b, .entry .date {
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0;
+}
+
+/* view */
+
+.table_panel h1 {
+	display: inline-block;
+}
+
+.table_panel span {
+	margin-left: 4pt;
+}
+
+.table_panel + table {
+	width: 100%;
+	border: none;
+	border-spacing: 0;
+}
+
+.table_panel + table th, .table_panel + table td {
+	border: none;
+	border-bottom: 1px solid #CCC;
+	padding: 10pt 8pt;
+	min-width: 30pt;
+}
+
+.table_panel + table td:first-child {
+	border-left: 1px solid #CCC;
+}
+
+.table_panel + table td:last-child {
+	border-right: 1px solid #CCC;
+}
+
+.table_panel + table tr:last-child td {
+	border-bottom: 1px solid #CCC;
+}
+
+.table_panel + table th {
+	background: #09C;
+	color: #FFF;
+}
+
+.table_panel + .error_message {
+	background: #F30;
+	border: 1px solid #FFF;
+	margin: 2pt 0;
+	margin-top: 4pt;
+	width: calc(100% - 4pt - 2px);
+	padding: 2pt;
+	display: inline-block;
+	color: #FFF;
+}
