@@ -1,5 +1,5 @@
 <?php
-	include "client.php";
+	include_once "client.php";
 	$client = new client();
 ?>
 <!doctype html>
@@ -12,6 +12,7 @@
 	<body>
 		<?php
 			if($client->logged_in()) {
+				include_once "utils.php";
 				include "modules/panel.php";
 			} else {
 				include "modules/login_form.php";

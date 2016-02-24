@@ -22,10 +22,6 @@
 			<!-- TODO: make delete buttons delete table -->
 
 			<?php
-			function format_num_rows($num) {
-				if($num == "") $num = 0;
-				return $num . " entries";
-			}
 
 			if($result !== false) {
 				while (odbc_fetch_row($result)) {
@@ -33,7 +29,7 @@
 					echo "\t<span class=\"visibility_button\" onclick=\"toggle('" . ""/*$post["directory"]*/ . "', '')\">V</span>\n";
 					echo "\t<a href=\"?tables&action=view&target=".odbc_result($result, 1)."\">";
 					echo "\t\t<b>" . odbc_result($result, 1) . "</b>\n";
-					echo "\t\t<span class=\"date\">" . format_num_rows(odbc_result($result, 2)) . "</span>\n";
+					echo "\t\t<span class=\"date\">" . get_num_rows($client, odbc_result($result, 1)) . "</span>\n";
 					echo "\t</a>\n";
 					echo "</div>\n";
 				}
@@ -54,7 +50,7 @@
 	<!-- TODO: view mode -->
 	<div class="table_panel">
 		<h1><?php echo $target; ?></h1>
-		<span>X entries</span> <!-- TODO select count(*) -->
+		<span><?php echo get_num_rows($client, $target); ?></span>
 		<!-- TODO add entry/edit table/delete table buttons -->
 	</div>
 
