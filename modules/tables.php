@@ -31,10 +31,7 @@
 				<!-- TODO: make it create new table -->
 			</div>
 
-			<!-- TODO: "visibility" delete button icon -->
-
 			<?php
-
 			if($result !== false) {
 				while (odbc_fetch_row($result)) {
 					$table_name = odbc_result($result, 1);
@@ -67,41 +64,10 @@
 		<!-- TODO add entry/edit table/delete table buttons -->
 	</div>
 
-	<!-- TODO add edit/delete buttons for each row -->
-	<!-- TODO field editing on click [?] -->
-
 	<?php
 		$query = "select * from ".$target." where rownum<50;";
 		$result = odbc_exec($client->get_connection(), $query);
-		if($result === false) {
-	?>
-		<div class="error_message">
-			<?php echo odbc_error() . ": " . odbc_errormsg(); ?>
-		</div>
-	<?php
-		} else {
-	?>
-		<table>
-			<tr>
-				<?php
-					$fields_count = odbc_num_fields($result);
-					for($i=1; $i<=$fields_count; ++$i) {
-						echo "<th>".odbc_field_name($result, $i)."</th>";
-					}
-				?>
-			</tr>
-			<?php
-				while(odbc_fetch_row($result)) {
-					echo "<tr>";
-					for($i=1; $i<=$fields_count; ++$i) {
-						echo "<td>".odbc_result($result, $i)."</td>";
-					}
-					echo "</tr>";
-				}
-			?>
-		</table>
-	<?php
-		}
+		make_results_table($result);
 	?>
 <?php
 	}

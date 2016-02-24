@@ -130,7 +130,7 @@ a.button:hover { background: #EEE; }
 .executed_query {
 	background: #EEE;
 	padding: 4pt;
-	margin: 6pt 0 2pt 0;
+	margin: 6pt 0 6pt 0;
 }
 
 .query_results {
@@ -238,35 +238,35 @@ a.button:hover { background: #EEE; }
 }
 
 .table_panel span {
-	margin-left: 4pt;
+	margin-left: 8pt;
 }
 
-.table_panel + table {
+.results_table {
 	width: 100%;
 	border: none;
 	border-spacing: 0;
 }
 
-.table_panel + table th, .table_panel + table td {
+.results_table th, .results_table td {
 	border: none;
 	border-bottom: 1px solid #CCC;
 	padding: 10pt 8pt;
 	min-width: 30pt;
 }
 
-.table_panel + table td:first-child {
+.results_table td:first-child {
 	border-left: 1px solid #CCC;
 }
 
-.table_panel + table td:last-child {
+.results_table td:last-child {
 	border-right: 1px solid #CCC;
 }
 
-.table_panel + table tr:last-child td {
+.results_table tr:last-child td {
 	border-bottom: 1px solid #CCC;
 }
 
-.table_panel + table th {
+.results_table th {
 	background: #09C;
 	color: #FFF;
 }

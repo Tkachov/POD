@@ -16,6 +16,9 @@ class client {
 	}
 
 	private function login(client_login_info $login_info) {
+		//TODO: odbc connect probably supports these DSNs: http://www.connectionstrings.com/oracle/
+		//may be something like "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=MyHost)(PORT=MyPort))(CONNECT_DATA=(SERVICE_NAME=MyOracleSID)));User Id=myUsername;Password=myPassword;"
+
 		$connect = odbc_connect($login_info->DSN, $login_info->user, $login_info->pass);
 		if($connect === false) {
 			$this->login_error_message = odbc_error() . ": " . odbc_errormsg();
