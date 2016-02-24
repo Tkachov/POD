@@ -213,12 +213,14 @@ a.button:hover { background: #EEE; }
 	float: right;
 	text-align: center;
 	width: 40pt;
+	height: 40pt;
 	color: #000;
 	text-decoration: none;
+	background: url('delete_icon_black.svg') no-repeat top 9pt center;
 }
 
 .visibility_button:hover {
-	background: #F40;
+	background: #F40 url('delete_icon_white.svg') no-repeat top 9pt center;
 	color: #FFF;
 	cursor: pointer;
 }

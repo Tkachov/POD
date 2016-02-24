@@ -39,7 +39,7 @@
 				while (odbc_fetch_row($result)) {
 					$table_name = odbc_result($result, 1);
 					echo "<div class=\"entry\""/* id=\"".$post["directory"]."\"*/ . ">\n";
-					echo "\t<a class=\"visibility_button\" href=\"?tables&action=delete&target=".$table_name."\">V</a>\n";
+					echo "\t<a class=\"visibility_button\" href=\"?tables&action=delete&target=".$table_name."\"></a>\n";
 					echo "\t<a href=\"?tables&action=view&target=".$table_name."\">";
 					echo "\t\t<b>".$table_name."</b>\n";
 					echo "\t\t<span class=\"date\">".get_num_rows($client, $table_name)."</span>\n";

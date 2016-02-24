@@ -7,7 +7,7 @@
 	<head>
 		<title>POD</title>
 		<meta charset="utf-8"/>
-		<link rel="stylesheet" type="text/css" href="style.css"/>
+		<link rel="stylesheet" type="text/css" href="design/style.css"/>
 	</head>
 	<body>
 		<?php
