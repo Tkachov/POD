@@ -233,13 +233,71 @@ a.button:hover { background: #EEE; }
 
 /* view */
 
+/* panel */
+
+.table_panel {
+	margin: 10pt 0;
+}
+
 .table_panel h1 {
 	display: inline-block;
+	line-height: 40pt;
+	vertical-align: baseline;
+	margin: 0;
 }
 
 .table_panel span {
 	margin-left: 8pt;
 }
+
+.table_panel .button {
+	float: right;
+	width: 40pt;
+	height: 40pt;
+	text-decoration: none;
+	padding: 0;
+}
+
+.table_panel .button:hover {
+	cursor: pointer;
+}
+
+.table_panel .button.add { background: none; }
+.table_panel .button.add:hover { background: #EEE; }
+
+.table_panel .button.add .plus-sign {
+	background: #222;
+	width: 3pt;
+	height: 24pt;
+	margin: calc((40pt - 24pt)/2) auto;
+}
+.table_panel .button.add .plus-sign:before {
+	background: #222;
+	width: 24pt;
+	height: 3pt;
+	top: calc((24pt - 3pt)/2);
+	left: calc((-24pt + 3pt)/2);
+}
+
+.table_panel .button.add:hover .plus-sign, .table_panel .button.add:hover .plus-sign:before { background: #0C0; }
+
+.table_panel .button.edit {
+	background: url('edit_icon_black.svg') no-repeat top calc(8pt + 2px) left 10pt;
+}
+
+.table_panel .button.edit:hover {
+	background: #EEE url('edit_icon_black.svg') no-repeat top calc(8pt + 2px) left 10pt;
+}
+
+.table_panel .button.delete {
+	background: url('delete_icon_black.svg') no-repeat top 9pt center;
+}
+
+.table_panel .button.delete:hover {
+	background: #F40 url('delete_icon_white.svg') no-repeat top 9pt center;
+}
+
+/* table */
 
 .results_table {
 	width: 100%;

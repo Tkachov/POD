@@ -61,7 +61,10 @@
 	<div class="table_panel">
 		<h1><?php echo $target; ?></h1>
 		<span><?php echo get_num_rows($client, $target); ?></span>
-		<!-- TODO add entry/edit table/delete table buttons -->
+		<!-- TODO add entry & edit table buttons -->
+		<a class="button delete" href=<?php echo "\"?tables&action=delete&target=".$target."\""; ?>></a>
+		<a class="button edit" href=<?php echo "\"\""; ?>></a>
+		<a class="button add" href=<?php echo "\"\""; ?>><div class="plus-sign"></div></a>
 	</div>
 
 	<?php
