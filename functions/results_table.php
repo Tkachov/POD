@@ -10,6 +10,7 @@ function make_results_table($result) {
 ?>
 		<!-- TODO add edit/delete buttons for each row -->
 		<!-- TODO field editing on click [?] -->
+		<!-- TODO think about NULL -->
 		<table class="results_table">
 			<tr>
 <?php
@@ -20,10 +21,16 @@ function make_results_table($result) {
 ?>
 			</tr>
 <?php
-			while(odbc_fetch_row($result)) {
+			function treat_result($res) {
+				if($res=='') return "&nbsp;";
+				return htmlspecialchars($res);
+			}
+
+			$res = array();
+			while(odbc_fetch_into($result, $res)) {
 				echo "<tr>";
-				for($i=1; $i<=$fields_count; ++$i) {
-					echo "<td>".odbc_result($result, $i)."</td>";
+				for($i=0; $i<$fields_count; ++$i) {
+					echo "<td>".treat_result($res[$i])."</td>";
 				}
 				echo "</tr>";
 			}

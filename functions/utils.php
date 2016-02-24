@@ -1,6 +1,10 @@
 <?php
 include_once "functions/client.php";
 
+function totally_escape($v) {
+	return trim(htmlspecialchars(stripslashes($v)));
+}
+
 function format_num_rows($num) {
 	if($num == "" || $num == 0) return "empty";
 	if($num == 1) return "1 entry";

@@ -276,6 +276,7 @@ a.button:hover { background: #EEE; }
 	width: 24pt;
 	height: 3pt;
 	top: calc((24pt - 3pt)/2);
+	/*noinspection CssInvalidPropertyValue*/
 	left: calc((-24pt + 3pt)/2);
 }
 
@@ -331,6 +332,7 @@ a.button:hover { background: #EEE; }
 
 .error_message { background: #F30; }
 .info_message { background: #09C; }
+.gray_message { background: #EEE; }
 
 .error_message, .info_message {
 	border: none;
@@ -342,3 +344,19 @@ a.button:hover { background: #EEE; }
 	display: block;
 	color: #FFF;
 }
+
+/* adding entry */
+
+.results_table input {
+	border: 1px solid #CCC;
+	margin: 0;
+	height: 16pt;
+	vertical-align: middle;
+}
+
+.results_table { margin-bottom: 6pt; }
+
+.results_table input[type="checkbox"] { width: 16pt; }
+.results_table input[type="text"] { width: calc(100% - 16pt - 2*2*1px - 2*2pt); padding: 2pt; }
+
+.results_table + a.right { float: right; }

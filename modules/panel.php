@@ -1,8 +1,4 @@
 <?php
-	function totally_escape($v) { //TODO: move
-		return trim(htmlspecialchars(stripslashes($v)));
-	}
-
 	$tabs = array("tables" => "Tables", "execute_query" => "Execute query");
 
 	$tab = key($tabs);
