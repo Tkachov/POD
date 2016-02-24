@@ -1,4 +1,17 @@
 <?php
+	if($action === "delete") {
+		$query = "DROP TABLE ".$target.";";
+
+		$result = odbc_exec($client->get_connection(), $query);
+		if($result === false) {
+			echo "<div class='error_message'>" . odbc_error() . ": " . odbc_errormsg() . "</div>";
+		} else {
+			echo "<div class='info_message'>".$target." dropped.</div>";
+		}
+
+		$action = "list";
+	}
+
 	if($action !== "list" && $action !== "edit" && $action !== "view") $action = "list";
 
 	if($action === "list") {
@@ -19,17 +32,17 @@
 			</div>
 
 			<!-- TODO: "visibility" delete button icon -->
-			<!-- TODO: make delete buttons delete table -->
 
 			<?php
 
 			if($result !== false) {
 				while (odbc_fetch_row($result)) {
+					$table_name = odbc_result($result, 1);
 					echo "<div class=\"entry\""/* id=\"".$post["directory"]."\"*/ . ">\n";
-					echo "\t<span class=\"visibility_button\" onclick=\"toggle('" . ""/*$post["directory"]*/ . "', '')\">V</span>\n";
-					echo "\t<a href=\"?tables&action=view&target=".odbc_result($result, 1)."\">";
-					echo "\t\t<b>" . odbc_result($result, 1) . "</b>\n";
-					echo "\t\t<span class=\"date\">" . get_num_rows($client, odbc_result($result, 1)) . "</span>\n";
+					echo "\t<a class=\"visibility_button\" href=\"?tables&action=delete&target=".$table_name."\">V</a>\n";
+					echo "\t<a href=\"?tables&action=view&target=".$table_name."\">";
+					echo "\t\t<b>".$table_name."</b>\n";
+					echo "\t\t<span class=\"date\">".get_num_rows($client, $table_name)."</span>\n";
 					echo "\t</a>\n";
 					echo "</div>\n";
 				}

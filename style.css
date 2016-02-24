@@ -142,7 +142,6 @@ a.button:hover { background: #EEE; }
 /* list */
 
 .entries {
-	margin-top: 20px;
 	padding-bottom: 20px;
 }
 
@@ -215,6 +214,7 @@ a.button:hover { background: #EEE; }
 	text-align: center;
 	width: 40pt;
 	color: #000;
+	text-decoration: none;
 }
 
 .visibility_button:hover {
@@ -269,13 +269,16 @@ a.button:hover { background: #EEE; }
 	color: #FFF;
 }
 
-.table_panel + .error_message {
-	background: #F30;
-	border: 1px solid #FFF;
+.error_message { background: #F30; }
+.info_message { background: #09C; }
+
+.error_message, .info_message {
+	border: none;
 	margin: 2pt 0;
 	margin-top: 4pt;
-	width: calc(100% - 4pt - 2px);
-	padding: 2pt;
-	display: inline-block;
+	margin-bottom: 8pt;
+	width: calc(100% - 2*5pt);
+	padding: 5pt;
+	display: block;
 	color: #FFF;
 }
