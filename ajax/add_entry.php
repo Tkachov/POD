@@ -5,10 +5,6 @@
 	$client = new client();
 	if(!$client->logged_in()) die("false");
 
-	function get_odbc_error() {
-		return odbc_error().": ".odbc_errormsg();
-	}
-
 	//check POST
 	$table_name = null;
 	$fields_count = 0;

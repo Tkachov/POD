@@ -36,7 +36,27 @@ html, body {
 
 .panel a:hover { background: #EEE; }
 
-.panel a.right { float: right; }
+/* generic buttons */
+
+.panel a.right, a.right.button { float: right; }
+
+a.button {
+	display: inline-block;
+	padding: 10pt 8pt;
+	width: 100pt;
+	height: 14pt;
+
+	color: #000;
+
+	text-transform: uppercase;
+	text-decoration: none;
+	text-align: center;
+
+	font-family: Tahoma;
+	font-size: 12pt;
+}
+
+a.button:hover { background: #EEE; }
 
 /* login form */
 
@@ -89,24 +109,6 @@ html, body {
 }
 
 /* query form */
-
-a.button {
-	display: inline-block;
-	padding: 10pt 8pt;
-	width: 100pt;
-	height: 14pt;
-
-	color: #000;
-
-	text-transform: uppercase;
-	text-decoration: none;
-	text-align: center;
-
-	font-family: Tahoma;
-	font-size: 12pt;
-}
-
-a.button:hover { background: #EEE; }
 
 .query_form {
 	width: 100%;
@@ -347,7 +349,7 @@ a.button:hover { background: #EEE; }
 
 /* adding entry */
 
-.results_table input {
+.results_table input, .results_table select {
 	border: 1px solid #CCC;
 	margin: 0;
 	height: 16pt;
@@ -357,6 +359,22 @@ a.button:hover { background: #EEE; }
 .results_table { margin-bottom: 6pt; }
 
 .results_table input[type="checkbox"] { width: 16pt; }
-.results_table input[type="text"] { width: calc(100% - 16pt - 2*2*1px - 2*2pt); padding: 2pt; }
+.results_table input[type="text"], .results_table select { width: calc(100% - 16pt - 2*2*1px - 2*2pt); padding: 2pt; }
 
-.results_table + a.right { float: right; }
+/* creating table */
+
+.results_table select {
+	width: calc(100% - 16pt - 2*2*1px);
+	padding: 0;
+}
+
+.create_table_table_name_field {
+	border: 1px solid #CCC;
+	margin: 0;
+	height: 20pt;
+	vertical-align: middle;
+
+	font-size: 14pt;
+	padding: 4pt 6pt;
+	margin-bottom: 8pt;
+}

@@ -1,6 +1,14 @@
 <?php
 include_once "functions/client.php";
 
+function get_odbc_error() {
+	return odbc_error().": ".odbc_errormsg();
+}
+
+function sql_types_array() {
+	return array("NUMBER", "VARCHAR2", "DATE", "TIMESTAMP", "CLOB", "BLOB", "BFILE", "CHAR", "FLOAT", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITH LOCAL TIME ZONE", "BINARY_FLOAT", "BINARY_DOUBLE", "RAW", "LONG RAW", "NCHAR", "NVARCHAR2", "NCLOB");
+}
+
 function totally_escape($v) {
 	return trim(htmlspecialchars(stripslashes($v)));
 }
