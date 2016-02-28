@@ -335,9 +335,9 @@ a.button:hover { background: #EEE; }
 
 .error_message { background: #F30; }
 .info_message { background: #09C; }
-.gray_message { background: #EEE; }
+.gray_message { background: #EEE; color: #000; }
 
-.error_message, .info_message {
+.error_message, .info_message, .gray_message {
 	border: none;
 	margin: 2pt 0;
 	margin-top: 4pt;

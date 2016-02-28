@@ -19,6 +19,7 @@
 				include "modules/login_form.php";
 			}
 		?>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script> <!-- TODO move to design/ -->
+		<script src="design/common.js"></script>
 	</body>
 </html>
