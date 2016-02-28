@@ -406,4 +406,18 @@ a.button:hover { background: #EEE; }
 	display: block;
 }
 
-/* TODO .results_table .button.delete and .button.edit fix icons */
+.results_table .button.edit {
+	background: url('edit_icon_black.svg') no-repeat top calc(6pt + 2px) left 8pt;
+}
+
+.results_table .button.edit:hover {
+	background: #EEE url('edit_icon_black.svg') no-repeat top calc(6pt + 2px) left 8pt;
+}
+
+.results_table .button.delete {
+	background: url('delete_icon_black.svg') no-repeat top 7pt center;
+}
+
+.results_table .button.delete:hover {
+	background: #F40 url('delete_icon_white.svg') no-repeat top 7pt center;
+}
