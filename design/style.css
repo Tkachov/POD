@@ -19,6 +19,7 @@ html, body {
 	position: fixed;
 	top: 0;
 	left: 0;
+	z-index: 1;
 
 	width: 100%;
 }
@@ -252,7 +253,7 @@ a.button:hover { background: #EEE; }
 	margin-left: 8pt;
 }
 
-.table_panel .button {
+.table_panel .button, .results_table .row_control .button {
 	float: right;
 	width: 40pt;
 	height: 40pt;
@@ -260,12 +261,12 @@ a.button:hover { background: #EEE; }
 	padding: 0;
 }
 
-.table_panel .button:hover {
+.button:hover {
 	cursor: pointer;
 }
 
-.table_panel .button.add { background: none; }
-.table_panel .button.add:hover { background: #EEE; }
+.button.add { background: none; }
+.button.add:hover { background: #EEE; }
 
 .table_panel .button.add .plus-sign {
 	background: #222;
@@ -282,21 +283,21 @@ a.button:hover { background: #EEE; }
 	left: calc((-24pt + 3pt)/2);
 }
 
-.table_panel .button.add:hover .plus-sign, .table_panel .button.add:hover .plus-sign:before { background: #0C0; }
+.button.add:hover .plus-sign, .button.add:hover .plus-sign:before { background: #0C0; }
 
-.table_panel .button.edit {
+.button.edit {
 	background: url('edit_icon_black.svg') no-repeat top calc(8pt + 2px) left 10pt;
 }
 
-.table_panel .button.edit:hover {
+.button.edit:hover {
 	background: #EEE url('edit_icon_black.svg') no-repeat top calc(8pt + 2px) left 10pt;
 }
 
-.table_panel .button.delete {
+.button.delete {
 	background: url('delete_icon_black.svg') no-repeat top 9pt center;
 }
 
-.table_panel .button.delete:hover {
+.button.delete:hover {
 	background: #F40 url('delete_icon_white.svg') no-repeat top 9pt center;
 }
 
@@ -368,6 +369,12 @@ a.button:hover { background: #EEE; }
 	padding: 0;
 }
 
+.results_table input[type="number"] {
+	width: calc(100% - 16pt - 2*2*1px - 1px);
+	height: auto;
+	padding: 1px 0 1px 1px;
+}
+
 .create_table_table_name_field {
 	border: 1px solid #CCC;
 	margin: 0;
@@ -378,3 +385,25 @@ a.button:hover { background: #EEE; }
 	padding: 4pt 6pt;
 	margin-bottom: 8pt;
 }
+
+.results_table .row_control {
+	display: none;
+	z-index: 10;
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	margin-top: -25pt;
+	background: #CCC;
+	left: 90%;
+}
+
+.results_table .row_control .button {
+	height: 36pt;
+	width: 36pt;
+}
+
+.results_table tr:hover .row_control {
+	display: block;
+}
+
+/* TODO .results_table .button.delete and .button.edit fix icons */

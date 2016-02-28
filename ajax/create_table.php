@@ -27,6 +27,12 @@
 	$query .= "?);";
 	*/
 
+	$has_precision = array("NUMBER", "FLOAT", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND");
+	$has_length = array(
+		"NUMBER" => 38, "VARCHAR2" => 4000, "CHAR" => 2000, "TIMESTAMP" => -1,
+		"INTERVAL DAY TO SECOND" => -1, "TIMESTAMP WITH TIME ZONE" => -1, "TIMESTAMP WITH LOCAL TIME ZONE" => -1,
+		"RAW" => -1, "NCHAR" => 2000, "NVARCHAR2" => 4000);
+
 	$first = true;
 	for($i=1; $i<=$fields_count; ++$i) {
 		if(!isset($_POST["column_name"]) || !isset($_POST["column_name"][$i]) || $_POST["column_name"][$i] == "")
@@ -43,6 +49,23 @@
 		//TODO: test column_name is one word or something
 
 		$query .= totally_escape($_POST["column_name"][$i])." ".$_POST["column_type"][$i];
+
+		$add_precision = (in_array($_POST["column_type"][$i], $has_precision));
+		$add_length = (array_key_exists($_POST["column_type"][$i], $has_length));
+
+		if($add_precision && (!isset($_POST["column_precision"]) || !isset($_POST["column_precision"][$i])))
+			die("false"); //TODO test it's number
+		if($add_length && (!isset($_POST["column_length"]) || !isset($_POST["column_length"][$i])))
+			die("false"); //TODO test it's number & <=max value
+
+		if($add_length && $add_precision) {
+			$query .= "(".$_POST["column_precision"][$i].",".$_POST["column_length"][$i].")";
+		} else if($add_length) {
+			$query .= "(".$_POST["column_length"][$i].")";
+		} else if($add_precision) {
+			$query .= "(".$_POST["column_precision"][$i].")";
+		}
+
 		if(isset($_POST["column_is_null"]) && isset($_POST["column_is_null"][$i]) && $_POST["column_is_null"][$i]=="true")
 			$query .= " NOT NULL";
 		//TODO UNIQUE PRIMARY KEY and so on

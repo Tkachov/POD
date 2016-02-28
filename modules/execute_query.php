@@ -9,6 +9,6 @@
 		echo "<pre class='executed_query'>".htmlspecialchars($query)."</pre>";
 
 		$result = odbc_exec($client->get_connection(), $query);
-		make_results_table($result);
+		make_results_table($result, false, null);
 	}
 ?>

@@ -4,6 +4,7 @@
 	$tab = key($tabs);
 	$action = "list";
 	$target = "";
+	$rowid = "";
 
 	foreach($_GET as $k => $v) {
 		$k = totally_escape($k);
@@ -12,6 +13,8 @@
 			$action = totally_escape($v);
 		else if($k === "target")
 			$target = totally_escape($v);
+		else if($k === "rowid")
+			$rowid = totally_escape($v);
 		else {
 			foreach ($tabs as $tab_name => $tab_title)
 				if($k === $tab_name) $tab = $k;

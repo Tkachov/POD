@@ -28,7 +28,6 @@
 		<div class="entries">
 			<div class="entry plus_sign">
 				<a href="?tables&action=edit"><div class="plus-sign"></div></a>
-				<!-- TODO: make it create new table -->
 			</div>
 
 			<?php
@@ -77,11 +76,9 @@
 			<tr>
 				<th>Column Name</th>
 				<th>Type</th>
-				<!--
-				<th>Precision</th>
-				<th>Scale</th>
-				-->
-				<th>Not NULL</th>
+				<th style="max-width: 50pt;">Precision</th>
+				<th style="max-width: 50pt;">Length</th>
+				<th style="max-width: 50pt;">Not NULL</th>
 				<!--
 				<th>Identity</th>
 				-->
@@ -104,6 +101,23 @@
 			else et.value = "";
 			cb.value = (cb.checked?"true":"false");
 			*/
+		}
+
+		function select_change(index) {
+			var has_precision = ["NUMBER", "FLOAT", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND"];
+			var has_length = {
+				"NUMBER": 38, "VARCHAR2": 4000, "CHAR": 2000, "TIMESTAMP": -1,
+				"INTERVAL DAY TO SECOND": -1, "TIMESTAMP WITH TIME ZONE": -1, "TIMESTAMP WITH LOCAL TIME ZONE": -1, "RAW": -1, "NCHAR": 2000, "NVARCHAR2": 4000};
+
+			var sl = document.getElementById('column'+index+'_type');
+			var ni = document.getElementById('column'+index+'_precision');
+			ni.disabled = (has_precision.indexOf(sl.value) == -1);
+
+			ni = document.getElementById('column'+index+'_length');
+			if(has_length.hasOwnProperty(sl.value)) {
+				ni.disabled = false;
+				ni.max = (has_length[sl.value] == -1 ? undefined : has_length[sl.value]);
+			} else ni.disabled = true;
 		}
 
 		var button_active = true;
@@ -158,17 +172,29 @@
 			return input;
 		}
 
-		function create_type_select(id, name) {
+		function create_type_select(id, name, onchange) {
 			var arr = <?php echo json_encode(sql_types_array()); ?>;
 			var input = document.createElement('select');
 			input.id = id;
 			input.name = name;
+			input.onchange = onchange;
 			for(var v of arr) {
 				var option = document.createElement('option');
 				option.value = v;
 				option.innerHTML = v;
 				input.appendChild(option);
 			}
+			return input;
+		}
+
+		function create_number_input(id, name/*, onchange*/) {
+			var input = document.createElement('input');
+			input.type = 'number';
+			input.id = id;
+			input.name = name;
+			input.value = 1;
+			input.min = 1;
+			//input.onchange = onchange;
 			return input;
 		}
 
@@ -188,9 +214,12 @@
 			var el = document.getElementById("table_columns");
 			el.appendChild(create_table_row([
 				create_text_input('name', 'column'+N+'_name', 'column_name['+N+']'),
-				create_type_select('column'+N+'_type', 'column_type['+N+']'),
+				create_type_select('column'+N+'_type', 'column_type['+N+']', function() {select_change(N);}),
+				create_number_input('column'+N+'_precision', 'column_precision['+N+']'),
+				create_number_input('column'+N+'_length', 'column_length['+N+']'),
 				create_checkbox('column'+N+'_not_null', 'column_not_null['+N+']', 'cb_change('+N+')')
 			]));
+			select_change(N);
 		}
 
 		for(var i=0; i<5; ++i) add_column();
@@ -218,6 +247,7 @@
 		<?php
 			echo "<form id='entry_form'>";
 			echo "<input type='hidden' name='table_name' value='".$target."'/>";
+			echo "<input type='hidden' name='rowid' value='".$rowid."'/>";
 			echo "<input type='hidden' name='fields_count' value='".$fields_count."'/>";
 			echo "<tr>";
 			for($i=1; $i<=$fields_count; ++$i) {
@@ -229,7 +259,7 @@
 			echo "</tr></form>";
 		?>
 	</table>
-	<a href="javascript:add_entry();" class="button right">Add</a>
+	<a href="javascript:add_entry();" class="button right"><?php echo ($rowid==""?"Add":"Save"); ?></a>
 	<script>
 		function cb_change(index) {
 			var cb = document.getElementById("field"+index+"_is_null");
@@ -272,6 +302,19 @@
 				}
 			});
 		}
+
+		<?php
+			$query = "SELECT * FROM ".$target." WHERE ROWID = '".$rowid."';";
+			$result = odbc_exec($client->get_connection(), $query);
+			$res = array();
+			$fields_count = odbc_num_fields($result);
+			if(odbc_fetch_into($result, $res)) {
+				for($i=1; $i<=$fields_count; ++$i) {
+					if($res[$i-1] == null) echo "document.getElementById('field".$i."_is_null').checked = true; cb_change(".$i.");";
+					else echo "document.getElementById('field".$i."_value').value = \"".htmlspecialchars($res[$i-1])."\";";
+				}
+			}
+		?>
 	</script>
 <?php
 	} else if($action === "view") {
@@ -286,11 +329,52 @@
 		<a class="button add" href=<?php echo "\"?tables&action=add_entry&target=".$target."\""; ?>><div class="plus-sign"></div></a>
 	</div>
 
+	<div id="save_message" style="display: none;"></div>
+
 	<?php
-		$query = "select * from ".$target." where rownum<50;";
+		$query = "select ROWID, a.* from ".$target." a where rownum<50;";
 		$result = odbc_exec($client->get_connection(), $query);
-		make_results_table($result);
+		make_results_table($result, false, $target);
 	?>
+
+	<script>
+		var button_active = true;
+
+		function message(eid, cl, m) {
+			var e = document.getElementById(eid);
+			e.className = cl;
+			e.innerHTML = m;
+			if(m == "") e.style.display = "none"; else e.style.display = "block";
+		}
+
+		function delete_entry(rowid) {
+			if(!button_active) return;
+			button_active = false;
+			message('save_message', "gray_message", "Saving...");
+
+			$.ajax({
+				type: "POST",
+				url: "ajax/delete_entry.php",
+				dataType: "html",
+				data: {"target": <?php echo "\"".$target."\""; ?>, "rowid": rowid},
+				success: function(a) {
+					button_active = true;
+					if(a == "true") {
+						message('save_message', "info_message", "Deleted");
+						//TODO hide on timeout
+						var el = document.getElementById("row_"+rowid);
+						el.parentNode.removeChild(el);
+					}
+					else message('save_message', "error_message", "Not deleted");
+					console.log(a);
+				},
+				error: function(e) {
+					button_active = true;
+					message('save_message', "error_message", "Failed to send the data");
+				}
+			});
+		}
+	</script>
 <?php
 	}
 ?>
