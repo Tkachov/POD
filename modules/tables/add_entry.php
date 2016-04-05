@@ -1,6 +1,7 @@
 <?php
-	$query = "SELECT column_name, data_type, data_length FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper($target)."';";
-	$result = odbc_exec($client->get_connection(), $query);
+	$query = "SELECT column_name, data_type, data_length FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper($target)."'";
+	$result = oci_parse($client->get_connection(), $query);
+	if($result === false || oci_execute($result)===false) $result = false;
 ?>
 <div id="save_message" style="display: none;"></div>
 <table class="results_table">
@@ -8,10 +9,10 @@
 		<?php
 			$fields_count = 0;
 			$types = array();
-			while(odbc_fetch_row($result)) {
+			while(oci_fetch($result)) {
 				$fields_count += 1;
-				echo "<th>".odbc_result($result, 1)."</th>";
-				$types[] = odbc_result($result, 2)."(".odbc_result($result, 3).")";
+				echo "<th>".oci_result($result, 1)."</th>";
+				$types[] = oci_result($result, 2)."(".oci_result($result, 3).")";
 			}
 		?>
 	</tr>
@@ -63,11 +64,12 @@
 
 	<?php
 		if($rowid != "") {
-			$query = "SELECT * FROM ".$target." WHERE ROWID = '".$rowid."';";
-			$result = odbc_exec($client->get_connection(), $query);
+			$query = "SELECT * FROM ".$target." WHERE ROWID = '".$rowid."'";
+			$result = oci_parse($client->get_connection(), $query);
+			if($result === false || oci_execute($result)===false) $result = false;
 			$res = array();
-			$fields_count = odbc_num_fields($result);
-			if(odbc_fetch_into($result, $res)) {
+			$fields_count = oci_num_fields($result);
+			if($res = odbc_fetch_row($result)) {
 				for ($i = 1; $i <= $fields_count; ++$i) {
 					if($res[$i - 1] == null) echo "document.getElementById('field" . $i . "_is_null').checked = true; cb_change(" . $i . ");";
 					else echo "document.getElementById('field" . $i . "_value').value = \"" . htmlspecialchars($res[$i - 1]) . "\";";

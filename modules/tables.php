@@ -1,10 +1,10 @@
 <?php
 	if($action === "delete") {
-		$query = "DROP TABLE ".$target.";";
+		$query = "DROP TABLE ".$target;
 
-		$result = odbc_exec($client->get_connection(), $query);
-		if($result === false) {
-			echo "<div class='error_message'>" . odbc_error() . ": " . odbc_errormsg() . "</div>";
+		$result = oci_parse($client->get_connection(), $query);
+		if($result === false || oci_execute($result) === false) {
+			echo "<div class='error_message'>" . oci_error()["code"] . ": " . oci_error()["message"] . "</div>";
 		} else {
 			echo "<div class='info_message'>".$target." dropped.</div>";
 		}
