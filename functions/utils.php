@@ -1,12 +1,8 @@
 <?php
 include_once "functions/client.php";
 
-function get_oci_error() {
-	return oci_error()["code"] . ": " . oci_error()["message"];
-}
-
-function get_oci_sql_error() {
-	return oci_error()["offset"] . ": " . oci_error()["sqltext"];
+function get_odbc_error() {
+	return odbc_error().": ".odbc_errormsg();
 }
 
 function sql_types_array() {
@@ -27,11 +23,9 @@ function get_num_rows(client $client, $table_name) {
 	//TODO: check client's cookie (setting) not to do all these selects
 	if(false) return "";
 
-	$query = "select count(*) from ".$table_name;
-	$res = oci_parse($client->get_connection(), $query);
+	$query = "select count(*) from ".$table_name.";";
+	$res = odbc_exec($client->get_connection(), $query);
 	if($res === false) return "unknown";
-	if(oci_execute($res) === false) return "unknown";
-	oci_fetch($res);
-	return format_num_rows(oci_result($res, 1));
+	else return format_num_rows(odbc_result($res, 1));
 }
 ?>

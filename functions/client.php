@@ -18,9 +18,10 @@ class client {
 	private function login(client_login_info $login_info) {
 		//TODO: odbc connect probably supports these DSNs: http://www.connectionstrings.com/oracle/
 		//may be something like "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=MyHost)(PORT=MyPort))(CONNECT_DATA=(SERVICE_NAME=MyOracleSID)));User Id=myUsername;Password=myPassword;"
-		$connect = oci_connect($login_info->user, $login_info->pass, $login_info->DSN);
+
+		$connect = odbc_connect($login_info->DSN, $login_info->user, $login_info->pass);
 		if($connect === false) {
-			$this->login_error_message = oci_error()["code"] . ": " . oci_error()["message"];
+			$this->login_error_message = odbc_error() . ": " . odbc_errormsg();
 		} else {
 			$this->logged_in = true;
 			$this->connection = $connect;
@@ -46,9 +47,9 @@ class client_login_info {
 	}
 
 	function save_in_cookies() {
-		if(setcookie("login_DSN", client_login_info::pack_cookie($this->DSN), 0, "/") === false
-		|| setcookie("login_user", client_login_info::pack_cookie($this->user), 0, "/") === false
-		|| setcookie("login_pass", client_login_info::pack_cookie($this->pass), 0, "/") === false) {
+		if(setcookie("login_DSN", client_login_info::pack_cookie($this->DSN)) === false
+		|| setcookie("login_user", client_login_info::pack_cookie($this->user)) === false
+		|| setcookie("login_pass", client_login_info::pack_cookie($this->pass)) === false) {
 			//TODO: something was before Cookie: header
 			echo "<h1>WARNING SOMETHING WRONG WITH COOKIES</h1>";
 		}

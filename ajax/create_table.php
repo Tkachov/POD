@@ -71,7 +71,7 @@
 		//TODO UNIQUE PRIMARY KEY and so on
 	}
 
-	$query .= "\n)";
+	$query .= "\n);";
 
 /*
 	$statement = odbc_prepare($client->get_connection(), $query);
@@ -88,7 +88,7 @@
 
 	$result = odbc_execute($statement, $items);
 */
-	$result = oci_parse($client->get_connection(), $query);
-	if($result === false || oci_execute($result) === false) die($query."\n\n".get_oci_error());
+	$result = odbc_exec($client->get_connection(), $query);
+	if($result === false) die($query."\n\n".get_odbc_error());
 	echo "true";
 ?>

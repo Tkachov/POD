@@ -19,12 +19,12 @@
 	//TODO check table_name is one word
 
 	//prepare statement
-	$query = "DELETE FROM ".$table_name." WHERE ROWID = :rowid;";
-	$statement = oci_parse($client->get_connection(), $query);
-	if($statement === false) die($query."\n\n".get_oci_error());
+	$query = "DELETE FROM ".$table_name." WHERE ROWID = ?;";
+	$statement = odbc_prepare($client->get_connection(), $query);
+	if($statement === false) die($query."\n\n".get_odbc_error());
 
-	oci_bind_by_name($statement, ":rowid", $rowid); //TODO TYPE
-	$result = oci_execute($statement);
-	if($result === false) die($query."\n\n".get_oci_error());
+	$items = array($rowid);
+	$result = odbc_execute($statement, $items);
+	if($result === false) die($query."\n\n".get_odbc_error());
 	echo "true";
 ?>

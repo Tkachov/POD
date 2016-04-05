@@ -1,11 +1,11 @@
 <?php
-	$query = "SELECT table_name FROM user_tables"; //current user's tables
-	//"SELECT owner, table_name FROM all_tables" for all tables
-	//"SELECT owner, table_name FROM dba_tables" for ALL tables (requires DBA privilege/role)
+	$query = "SELECT table_name FROM user_tables;"; //current user's tables
+	//"SELECT owner, table_name FROM all_tables;" for all tables
+	//"SELECT owner, table_name FROM dba_tables;" for ALL tables (requires DBA privilege/role)
 
-	$result = oci_parse($client->get_connection(), $query);
-	if($result === false || oci_execute($result) === false) {
-		echo "<div class='error_message'>" . oci_error()["code"] . ": " . oci_error()["message"] . "</div>";
+	$result = odbc_exec($client->get_connection(), $query);
+	if($result === false) {
+		echo "<div class='error_message'>" . odbc_error() . ": " . odbc_errormsg() . "</div>";
 	}
 ?>
 
@@ -16,8 +16,8 @@
 
 	<?php
 	if($result !== false) {
-		while (oci_fetch_row($result)) {
-			$table_name = oci_result($result, 1);
+		while (odbc_fetch_row($result)) {
+			$table_name = odbc_result($result, 1);
 			echo "<div class=\"entry\""/* id=\"".$post["directory"]."\"*/ . ">\n";
 			echo "\t<a class=\"visibility_button\" href=\"?tables&action=delete&target=".$table_name."\"></a>\n";
 			echo "\t<a href=\"?tables&action=view&target=".$table_name."\">";
@@ -28,6 +28,6 @@
 		}
 	}
 
-	oci_close($client->get_connection());
+	odbc_close($client->get_connection());
 	?>
 </div>

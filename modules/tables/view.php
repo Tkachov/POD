@@ -9,9 +9,8 @@
 
 <div id="save_message" style="display: none;"></div>
 <?php
-	$query = "select ROWID, a.* from ".$target." a where rownum<50";
-	$result = oci_parse($client->get_connection(), $query);
-	if($result === false || oci_execute($result) === false) $result = false;
+	$query = "select ROWID, a.* from ".$target." a where rownum<50;";
+	$result = odbc_exec($client->get_connection(), $query);
 	make_results_table($result, false, $target);
 ?>
 
