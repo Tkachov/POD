@@ -22,3 +22,17 @@ function AJAX_POST(url, data, success, error) {
 		error: error
 	});
 }
+
+function get_json(a) {
+	if(String.toLowerCase(typeof(a)) == "string") {
+		var ok = true;
+		var response = null;
+		//console.log(a);
+		try { response = $.parseJSON(a); }
+		catch(e) { ok = false; /*console.log(e);*/ }
+		if(ok) return response;
+		else return false;
+	}
+
+	return a;
+}

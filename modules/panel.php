@@ -1,5 +1,5 @@
 <?php
-	$tabs = array("tables" => "Tables", "execute_query" => "Execute query");
+	$tabs = array("tables" => "Tables", "compose_report" => "Compose report", "execute_query" => "Execute query");
 
 	$tab = key($tabs);
 	$action = "list";

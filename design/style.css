@@ -421,3 +421,67 @@ a.button:hover { background: #EEE; }
 .results_table .button.delete:hover {
 	background: #F40 url('delete_icon_white.svg') no-repeat top 7pt center;
 }
+
+/* composing report */
+
+.report_form {
+	padding-top: 6pt;
+}
+
+.report_form input[type="number"] {
+	width: 50pt;
+}
+
+.report_form p {
+	margin: 6pt 0;
+}
+
+.report_form #fields {
+	margin-top: 0;
+}
+
+.report_field_selector {
+	display: inline-block;
+	padding: 10pt 8pt;
+	min-width: 100pt;
+	height: 14pt;
+	color: #000;
+	text-transform: uppercase;
+	text-decoration: none;
+	text-align: center;
+	font-family: Tahoma;
+	font-size: 12pt;
+	font-weight: bold;
+
+	/* not selectable */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.report_field_selector input[value="off"] + span, .report_field_selector input[value="false"] + span {
+	font-weight: normal;
+	text-decoration: line-through;
+}
+
+.report_field_selector input {
+	visibility: hidden;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	width: 0;
+	height: 0;
+	margin-left: -4px; /* firefox windows usual dpi what's left */
+	-moz-appearance:none;
+	-webkit-appearance:none;
+	-o-appearance:none;
+}
+
+.report_field_selector:hover {
+	background: #EEE;
+	cursor: pointer;
+}
