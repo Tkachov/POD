@@ -68,7 +68,23 @@ class client_login_info {
 	}
 
 	static function create_info_from_post() {
-		if($_POST) return new client_login_info($_POST["database"], $_POST["username"], $_POST["password"]);
+		if($_POST) {
+			if(isset($_POST["IP"])) {
+				$idx = strpos($_POST["IP"], ":");
+				if($idx === false) {
+					$IP = $_POST["IP"];
+					$port = "1521";
+				} else {
+					$IP = strpos($_POST["IP"], 0, $idx);
+					$port = strpos($_POST["IP"], $idx+1);
+				}
+				$DSN = "DRIVER={Oracle 12g ODBC driver};DSN=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=".$IP.")(PORT=".$port.")))(CONNECT_DATA=(SID=".$_POST["database"].")));UserID=".$_POST["username"].";Password=".$_POST["password"].";";
+				return new client_login_info($DSN, $_POST["username"], $_POST["password"]);
+			}
+
+			return new client_login_info($_POST["database"], $_POST["username"], $_POST["password"]);
+		}
+
 		return null;
 	}
 

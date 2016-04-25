@@ -96,6 +96,21 @@ a.button:hover { background: #EEE; }
 
 .login_form form input[type="submit"]:hover {
 	background: #09F;
+	cursor: pointer;
+}
+
+#use_ip { display: none; }
+
+.login_form > div > a:last-child {
+	color: #AAA;
+	text-align: center;
+	font-size: 10pt;
+	display: block;
+	margin: 4pt 0 0 0;
+}
+
+.login_form > div > a:last-child:hover {
+	color: #09F;
 }
 
 .login_form form + .error_message {
