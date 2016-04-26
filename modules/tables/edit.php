@@ -16,7 +16,11 @@ CREATE TABLE head_students (
 <div id="save_message" style="display: none;"></div>
 <form id='table_form'>
 	<?php
-	echo "<input type='".($target==""?"text":"hidden")."' placeholder='table name' name='table_name' value='".$target."' class='create_table_table_name_field'/>";
+	echo "<input type='".($target==""?"text":"hidden")."' placeholder='table name' name='table_name' value='".totally_escape($target)."' class='create_table_table_name_field'/>";
+	if($target != "") {
+		echo "<h1>".totally_escape($target)."</h1>";
+		echo "<input type='hidden' name='mode' value='editing'/>";
+	}
 	?>
 	<input type='hidden' name='fields_count' id='fields_count' value='0'/>
 
@@ -35,20 +39,18 @@ CREATE TABLE head_students (
 	<!-- TODO primary key / unique -->
 	<!-- TODO check clause -->
 	<!-- TODO "foreign key references" -->
-	<a href="javascript:create_table();" class="button right">Create table</a>
+	<a href="javascript:create_table();" class="button right"><?php echo ($target==""?"Create table":"Edit table"); ?></a>
 	<a href="javascript:add_column();" class="button right">Add column</a>
 </form>
 <div style="height: 60pt; clear: both;"></div>
 <script>
 	function cb_change(index) {
-		/*
-		 var cb = document.getElementById("field"+index+"_is_null");
-		 var et = document.getElementById("field"+index+"_value");
-		 et.disabled = cb.checked;
-		 if(cb.checked) et.value = "NULL";
-		 else et.value = "";
+		 var cb = document.getElementById("column"+index+"_not_null");
+		 //var et = document.getElementById("field"+index+"_value");
+		 //et.disabled = cb.checked;
+		 //if(cb.checked) et.value = "NULL";
+		 //else et.value = "";
 		 cb.value = (cb.checked?"true":"false");
-		 */
 	}
 
 	function select_change(index) {
@@ -72,13 +74,13 @@ CREATE TABLE head_students (
 	function create_table() {
 		if(!button_active) return;
 		button_active = false;
-		message('save_message', "gray_message", "Creating...");
+		message('save_message', "gray_message", <?php echo ($target==""?"\"Creating...\"":"\"Changing...\""); ?>);
 
-		AJAX_POST("ajax/create_table.php", $('#table_form').serialize(),
+		AJAX_POST(<?php echo ($target==""?"\"ajax/create_table.php\"":"\"ajax/edit_table_fields.php\""); ?>, $('#table_form').serialize(),
 			function(a) {
 				button_active = true;
-				if(a == "true") message('save_message', "info_message", "Created");
-				else message('save_message', "error_message", "Not created");
+				if(a == "true") message('save_message', "info_message", <?php echo ($target==""?"\"Created\"":"\"Changed\""); ?>);
+				else message('save_message', "error_message", <?php echo ($target==""?"\"Not created\"":"\"Not changed\""); ?>);
 				console.log(a);
 			},
 			function(e) {
@@ -152,10 +154,34 @@ CREATE TABLE head_students (
 			create_type_select('column'+N+'_type', 'column_type['+N+']', function() {select_change(N);}),
 			create_number_input('column'+N+'_precision', 'column_precision['+N+']'),
 			create_number_input('column'+N+'_length', 'column_length['+N+']'),
-			create_checkbox('column'+N+'_not_null', 'column_not_null['+N+']', 'cb_change('+N+')')
+			create_checkbox('column'+N+'_not_null', 'column_not_null['+N+']', function() {cb_change(N);})
 		]));
 		select_change(N);
 	}
 
+	function setup_column(index, name, type, precision, length, not_null) {
+		document.getElementById('column'+index+'_name').value = name;
+		document.getElementById('column'+index+'_type').value = type;
+		document.getElementById('column'+index+'_precision').value = precision;
+		document.getElementById('column'+index+'_length').value = length;
+		document.getElementById('column'+index+'_not_null').checked = not_null;
+		document.getElementById('column'+index+'_not_null').value = (not_null?'true':'false');
+
+		select_change(index);
+	}
+
+<?php if($target=="") { ?>
 	for(var i=0; i<5; ++i) add_column();
+<?php
+	} else {
+		$colnames = odbc_exec($client->get_connection(), "SELECT column_name, data_type, data_precision, data_length, nullable, column_id FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper(totally_escape($target))."' ORDER BY column_id ASC;");
+		$idx = 1;
+		while(odbc_fetch_row($colnames)) {
+			echo "\tadd_column();\n";
+			echo "\tsetup_column(".$idx.", \"".odbc_result($colnames, 1)."\", \"".odbc_result($colnames, 2)."\", \"".odbc_result($colnames, 3)."\", \"".odbc_result($colnames, 4)."\", \"".odbc_result($colnames, 5)."\" == \"N\");\n";
+			//if == N => NOT NULL present (true)
+			$idx += 1;
+		}
+	}
+?>
 </script>

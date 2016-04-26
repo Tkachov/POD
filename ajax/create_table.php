@@ -66,7 +66,7 @@
 			$query .= "(".$_POST["column_precision"][$i].")";
 		}
 
-		if(isset($_POST["column_is_null"]) && isset($_POST["column_is_null"][$i]) && $_POST["column_is_null"][$i]=="true")
+		if(isset($_POST["column_not_null"]) && isset($_POST["column_not_null"][$i]) && $_POST["column_not_null"][$i]=="true")
 			$query .= " NOT NULL";
 		//TODO UNIQUE PRIMARY KEY and so on
 	}
