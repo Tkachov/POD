@@ -120,8 +120,7 @@
 			if($was_not_null != $is_not_null) {
 				//echo "changing NOT NULL of ".$new_name."\n"; //debug
 				if($is_not_null) {
-					//TODO: I guess we need DEFAULT <x> there - I guess right
-					if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." MODIFY ".$new_name." NOT NULL;") === false) {
+					if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." MODIFY ".$new_name." default '' NOT NULL;") === false) {
 						$rollback_needed = true;
 						$rollback_error_message = get_odbc_error();
 						break;
@@ -141,22 +140,16 @@
 
 	//add new fields if there are any
 	if($rollback_needed === false) {
-		/*
-		for ($i = 1; $i <= $fields_count; ++$i) {
+		for ($i = $idx; $i <= $fields_count; ++$i) {
 			if(!isset($_POST["column_name"]) || !isset($_POST["column_name"][$i]) || $_POST["column_name"][$i] == "")
 				continue;
 
 			if(!isset($_POST["column_type"]) || !isset($_POST["column_type"][$i]) || !in_array($_POST["column_type"][$i], $types_arr))
 				die("false: bad column_type:\n" . $_POST["column_type"][$i] . " not in " . var_export($types_arr));
 
-			if($first) $first = false;
-			else $query .= ",\n";
-
-			$query .= "    ";
-
 			//TODO: test column_name is one word or something
 
-			$query .= totally_escape($_POST["column_name"][$i]) . " " . $_POST["column_type"][$i];
+			$full_type =  $_POST["column_type"][$i];
 
 			$add_precision = (in_array($_POST["column_type"][$i], $has_precision));
 			$add_length = (array_key_exists($_POST["column_type"][$i], $has_length));
@@ -167,25 +160,25 @@
 				die("false"); //TODO test it's number & <=max value
 
 			if($add_length && $add_precision) {
-				$query .= "(" . $_POST["column_precision"][$i] . "," . $_POST["column_length"][$i] . ")";
+				$full_type .= "(" . $_POST["column_precision"][$i] . "," . $_POST["column_length"][$i] . ")";
 			} else if($add_length) {
-				$query .= "(" . $_POST["column_length"][$i] . ")";
+				$full_type .= "(" . $_POST["column_length"][$i] . ")";
 			} else if($add_precision) {
-				$query .= "(" . $_POST["column_precision"][$i] . ")";
+				$full_type .= "(" . $_POST["column_precision"][$i] . ")";
 			}
 
+
+			$query = "ALTER TABLE ".$table_name." ADD (".totally_escape($_POST["column_name"][$i])." ".$full_type;
 			if(isset($_POST["column_not_null"]) && isset($_POST["column_not_null"][$i]) && $_POST["column_not_null"][$i] == "true")
-				$query .= " NOT NULL";
+				$query .= " DEFAULT '' NOT NULL";
+			$query .= ");";
+			if(odbc_exec($client->get_connection(), $query) === false) {
+				$rollback_needed = true;
+				$rollback_error_message = get_odbc_error();
+				break;
+			}
 			//TODO UNIQUE PRIMARY KEY and so on
-
-			/ *
-			 *ALTER TABLE hr.admin_emp
-      ADD (bonus NUMBER (7,2));
-
-			You can add a column with a NOT NULL constraint only if the table does not contain any rows, or you specify a default value.
-			 * /
 		}
-		*/
 	}
 
 	//check if rollback needed
