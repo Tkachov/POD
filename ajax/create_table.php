@@ -21,6 +21,11 @@
 
 	//TODO: test table_name is one word or something
 
+	if(odbc_exec($client->get_connection(), "COMMIT;") === false) die(get_odbc_error());
+	if(odbc_exec($client->get_connection(), "SET TRANSACTION NAME 'edit_table_fields_transaction';") === false) die(get_odbc_error());
+	$rollback_needed = false;
+	$rollback_error_message = "";
+
 	$query = "CREATE TABLE ".totally_escape($table_name)." (\n";
 	/*
 	for($i=1; $i<$fields_count; ++$i) $query .= "?, ";
@@ -68,7 +73,20 @@
 
 		if(isset($_POST["column_not_null"]) && isset($_POST["column_not_null"][$i]) && $_POST["column_not_null"][$i]=="true")
 			$query .= " NOT NULL";
-		//TODO UNIQUE PRIMARY KEY and so on
+
+		$is_unique = false;
+		$is_primary = false;
+
+		if(isset($_POST["column_unique"]) && isset($_POST["column_unique"][$i]) && $_POST["column_unique"][$i]=="true")
+			$is_unique = true;
+
+		if(isset($_POST["column_primary"]) && isset($_POST["column_primary"][$i]) && $_POST["column_primary"][$i]=="true")
+			$is_primary = true;
+
+		if($is_primary)
+			; //$query .= " PRIMARY KEY"; //complex primary key is handled down there
+		else if($is_unique)
+			$query .= " UNIQUE";
 	}
 
 	$query .= "\n);";
@@ -88,7 +106,50 @@
 
 	$result = odbc_execute($statement, $items);
 */
-	$result = odbc_exec($client->get_connection(), $query);
-	if($result === false) die($query."\n\n".get_odbc_error());
+	if(odbc_exec($client->get_connection(), $query) === false) {
+		$rollback_needed = true;
+		$rollback_error_message = get_odbc_error();
+	}
+
+	//add complex primary key
+	if($rollback_needed === false) {
+		$fields_list = "";
+
+		for ($i = 1; $i <= $fields_count; ++$i) {
+			if(!isset($_POST["column_name"]) || !isset($_POST["column_name"][$i]) || $_POST["column_name"][$i] == "")
+				continue;
+
+			if(isset($_POST["column_primary"]) && isset($_POST["column_primary"][$i]) && $_POST["column_primary"][$i]=="true")
+				if($fields_list == "") {
+					$fields_list = totally_escape($_POST["column_name"][$i]);
+				} else {
+					$fields_list .= ", ".totally_escape($_POST["column_name"][$i]);
+				}
+		}
+
+		if($fields_list != "") {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE ".totally_escape($table_name)." ADD CONSTRAINT ".totally_escape($table_name)."_primary_key_constraint PRIMARY KEY (".$fields_list.");") === false) {
+				$rollback_needed = true;
+				$rollback_error_message = get_odbc_error();
+			}
+		}
+	}
+
+	//check if rollback needed
+	if($rollback_needed === true) {
+		if(odbc_exec($client->get_connection(), "ROLLBACK;") === false) {
+			die("Error occurred. Was unable rollback the transaction:\n\n".$rollback_error_message."\n\n".get_odbc_error());
+		}
+		die("Error occurred. Transaction was rollbacked.\n\n".$rollback_error_message);
+	}
+
+	if(odbc_exec($client->get_connection(), "COMMIT;") === false) {
+		$err = get_odbc_error();
+		if(odbc_exec($client->get_connection(), "ROLLBACK;") === false) {
+			die("Was unable to both commit and rollback the transaction:\n\n".$err."\n\n".get_odbc_error());
+		}
+		die("Was unable to both commit the transaction. It was rollbacked.\n\n".$err);
+	}
+
 	echo "true";
 ?>

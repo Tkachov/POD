@@ -30,14 +30,14 @@ CREATE TABLE head_students (
 			<th>Type</th>
 			<th style="max-width: 50pt;">Precision</th>
 			<th style="max-width: 50pt;">Length</th>
-			<th style="max-width: 50pt;">Not NULL</th>
+			<th style="min-width: 55pt; max-width: 55pt;">Not NULL</th>
+			<th style="max-width: 50pt;">Unique</th>
+			<th style="max-width: 50pt;">Primary</th>
 			<!--
 			<th>Identity</th>
 			-->
 		</tr>
 	</table>
-	<!-- TODO primary key / unique -->
-	<!-- TODO check clause -->
 	<!-- TODO "foreign key references" -->
 	<a href="javascript:create_table();" class="button right"><?php echo ($target==""?"Create table":"Edit table"); ?></a>
 	<a href="javascript:add_column();" class="button right">Add column</a>
@@ -46,11 +46,20 @@ CREATE TABLE head_students (
 <script>
 	function cb_change(index) {
 		 var cb = document.getElementById("column"+index+"_not_null");
-		 //var et = document.getElementById("field"+index+"_value");
-		 //et.disabled = cb.checked;
-		 //if(cb.checked) et.value = "NULL";
-		 //else et.value = "";
 		 cb.value = (cb.checked?"true":"false");
+	}
+
+	function cb_change2(index) {
+		var cb = document.getElementById("column"+index+"_unique");
+		cb.value = (cb.checked?"true":"false");
+	}
+
+	function cb_change3(index) {
+		var cb = document.getElementById("column"+index+"_primary");
+		cb.value = (cb.checked?"true":"false");
+
+		var cb2 = document.getElementById("column"+index+"_unique");
+		cb2.disabled = cb.checked;
 	}
 
 	function select_change(index) {
@@ -154,18 +163,29 @@ CREATE TABLE head_students (
 			create_type_select('column'+N+'_type', 'column_type['+N+']', function() {select_change(N);}),
 			create_number_input('column'+N+'_precision', 'column_precision['+N+']'),
 			create_number_input('column'+N+'_length', 'column_length['+N+']'),
-			create_checkbox('column'+N+'_not_null', 'column_not_null['+N+']', function() {cb_change(N);})
+			create_checkbox('column'+N+'_not_null', 'column_not_null['+N+']', function() {cb_change(N);}),
+			create_checkbox('column'+N+'_unique', 'column_unique['+N+']', function() {cb_change2(N);}),
+			create_checkbox('column'+N+'_primary', 'column_primary['+N+']', function() {cb_change3(N);})
 		]));
 		select_change(N);
 	}
 
-	function setup_column(index, name, type, precision, length, not_null) {
+	function setup_column(index, name, type, precision, length, not_null, constraint) {
 		document.getElementById('column'+index+'_name').value = name;
 		document.getElementById('column'+index+'_type').value = type;
 		document.getElementById('column'+index+'_precision').value = precision;
 		document.getElementById('column'+index+'_length').value = length;
 		document.getElementById('column'+index+'_not_null').checked = not_null;
 		document.getElementById('column'+index+'_not_null').value = (not_null?'true':'false');
+
+		var primary = (constraint == 'P');
+		document.getElementById('column'+index+'_primary').checked = primary;
+		document.getElementById('column'+index+'_primary').value = (primary?'true':'false');
+
+		var unique = (constraint == 'U' || constraint == 'P');
+		document.getElementById('column'+index+'_unique').checked = unique;
+		document.getElementById('column'+index+'_unique').value = (unique?'true':'false');
+		document.getElementById('column'+index+'_unique').disabled = primary;
 
 		select_change(index);
 	}
@@ -174,11 +194,13 @@ CREATE TABLE head_students (
 	for(var i=0; i<5; ++i) add_column();
 <?php
 	} else {
-		$colnames = odbc_exec($client->get_connection(), "SELECT column_name, data_type, data_precision, data_length, nullable, column_id FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper(totally_escape($target))."' ORDER BY column_id ASC;");
+		$q = "SELECT column_name, data_type, data_precision, data_length, nullable, data_type_mod, column_id FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper(totally_escape($target))."' ORDER BY column_id ASC;";
+		$q = get_columns_info_query($target);
+		$colnames = odbc_exec($client->get_connection(), $q);
 		$idx = 1;
 		while(odbc_fetch_row($colnames)) {
 			echo "\tadd_column();\n";
-			echo "\tsetup_column(".$idx.", \"".odbc_result($colnames, 1)."\", \"".odbc_result($colnames, 2)."\", \"".odbc_result($colnames, 3)."\", \"".odbc_result($colnames, 4)."\", \"".odbc_result($colnames, 5)."\" == \"N\");\n";
+			echo "\tsetup_column(".$idx.", \"".odbc_result($colnames, 1)."\", \"".odbc_result($colnames, 2)."\", \"".odbc_result($colnames, 3)."\", \"".odbc_result($colnames, 4)."\", \"".odbc_result($colnames, 5)."\" == \"N\", \"".odbc_result($colnames, 6)."\");\n";
 			//if == N => NOT NULL present (true)
 			$idx += 1;
 		}

@@ -63,14 +63,18 @@
 	$rollback_error_message = "";
 
 	//check if existing fields were not changed
-	$colnames = odbc_exec($client->get_connection(), "SELECT column_name, data_type, data_precision, data_length, nullable, column_id FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper($table_name)."' ORDER BY column_id ASC;");
+	//"SELECT column_name, data_type, data_precision, data_length, nullable, CONSTRAINT_TYPE, column_id FROM ALL_TAB_COLUMNS acol LEFT JOIN (select CONSTRAINT_TYPE, COLUMN_NAME as c2 from user_constraints uc inner join USER_IND_COLUMNS cols ON uc.index_name = cols.index_name) ON column_name = c2 where table_name='".strtoupper(totally_escape($target))."' ORDER BY column_id ASC"
+	$colnames = odbc_exec($client->get_connection(), get_columns_info_query(strtoupper($table_name)));
 	$idx = 1;
+	$drop_primary_key = false;
+	$make_unique_fields_list = array();//""
 	while(odbc_fetch_row($colnames)) {
 		//odbc_result($colnames, 1) -- column_name
 		//odbc_result($colnames, 2) -- type
 		//odbc_result($colnames, 3) -- precision
 		//odbc_result($colnames, 4) -- length
 		//odbc_result($colnames, 5) //if == N => NOT NULL present (true)
+		//odbc_result($colnames, 6) //constraint type ('P' for primary, 'U' for unique)
 
 		//TODO: compare with column$idx_*
 		//if name is empty, delete column
@@ -133,6 +137,42 @@
 					}
 				}
 			}
+
+			$old_constraint = odbc_result($colnames, 6);
+			$new_constraint = '';
+			if(isset($_POST["column_primary"]) && isset($_POST["column_primary"][$idx]) && $_POST["column_primary"][$idx]=="true")
+				$new_constraint = 'P';
+			else if(isset($_POST["column_unique"]) && isset($_POST["column_unique"][$idx]) && $_POST["column_unique"][$idx]=="true")
+				$new_constraint = 'U';
+
+			if(strcasecmp($old_constraint, $new_constraint) != 0) {
+				//drop old
+				if(strcasecmp($old_constraint, 'P')==0)
+					$drop_primary_key = true;
+
+				if(strcasecmp($old_constraint, 'U')==0) {
+					$q = "ALTER TABLE " . $table_name . " DROP UNIQUE (" . $new_name . ");";
+					if(odbc_exec($client->get_connection(), $q) === false) {
+						$rollback_needed = true;
+						$rollback_error_message = $new_name."\n".get_odbc_error();
+						break;
+					}
+				}
+
+				//modify new
+				if(strcasecmp($new_constraint, 'P')==0) //primary key (because it can be complex) is handled down there
+					$drop_primary_key = true;
+
+				if(strcasecmp($new_constraint, 'U')==0) { //unique must be changed after primary key is dropped and set
+					$make_unique_fields_list[] = $new_name;
+					/*
+					if($make_unique_fields_list == "")
+						$make_unique_fields_list = $new_name;
+					else
+						$make_unique_fields_list .= ", ".$new_name;
+					*/
+				}
+			}
 		}
 
 		$idx += 1;
@@ -165,21 +205,88 @@
 				$full_type .= "(" . $_POST["column_length"][$i] . ")";
 			} else if($add_precision) {
 				$full_type .= "(" . $_POST["column_precision"][$i] . ")";
-			}
-
+			} //TODO length and precision here are not sanitized
 
 			$query = "ALTER TABLE ".$table_name." ADD (".totally_escape($_POST["column_name"][$i])." ".$full_type;
 			if(isset($_POST["column_not_null"]) && isset($_POST["column_not_null"][$i]) && $_POST["column_not_null"][$i] == "true")
 				$query .= " DEFAULT '' NOT NULL";
+
+			$is_unique = false;
+			$is_primary = false;
+
+			if(isset($_POST["column_unique"]) && isset($_POST["column_unique"][$i]) && $_POST["column_unique"][$i]=="true")
+				$is_unique = true;
+
+			if(isset($_POST["column_primary"]) && isset($_POST["column_primary"][$i]) && $_POST["column_primary"][$i]=="true")
+				$is_primary = true;
+
+			if($is_primary)
+				; //$query .= " PRIMARY KEY"; //complex primary key is handled down there
+			else if($is_unique)
+				$query .= " UNIQUE";
+
 			$query .= ");";
 			if(odbc_exec($client->get_connection(), $query) === false) {
 				$rollback_needed = true;
 				$rollback_error_message = get_odbc_error();
 				break;
 			}
-			//TODO UNIQUE PRIMARY KEY and so on
 		}
 	}
+
+	//add complex primary key
+	if($rollback_needed === false) {
+		if($drop_primary_key) {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." DROP PRIMARY KEY;") === false) {
+				$rollback_needed = true;
+				$rollback_error_message = get_odbc_error();
+			}
+		}
+	}
+
+	if($rollback_needed === false) {
+		$fields_list = "";
+
+		for ($i = 1; $i <= $fields_count; ++$i) {
+			if(!isset($_POST["column_name"]) || !isset($_POST["column_name"][$i]) || $_POST["column_name"][$i] == "")
+				continue;
+
+			if(isset($_POST["column_primary"]) && isset($_POST["column_primary"][$i]) && $_POST["column_primary"][$i]=="true")
+				if($fields_list == "") {
+					$fields_list = totally_escape($_POST["column_name"][$i]);
+				} else {
+					$fields_list .= ", ".totally_escape($_POST["column_name"][$i]);
+				}
+		}
+
+		if($drop_primary_key && $fields_list != "") {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." ADD CONSTRAINT ".$table_name."_primary_key_constraint PRIMARY KEY (".$fields_list.");") === false) {
+				$rollback_needed = true;
+				$rollback_error_message = $fields_list."\n".get_odbc_error();
+			}
+		}
+	}
+
+	//
+	if($rollback_needed === false) {
+		/*
+		if($make_unique_fields_list != "") {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE " . $table_name . " MODIFY UNIQUE (" . $make_unique_fields_list . ") UNIQUE ENABLE;") === false) {
+				$rollback_needed = true;
+				$rollback_error_message = $make_unique_fields_list."\n".get_odbc_error();
+			}
+		}
+		*/
+
+		foreach ($make_unique_fields_list as $field_name) {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE " . $table_name . " MODIFY " . $field_name . " UNIQUE;") === false) {
+				$rollback_needed = true;
+				$rollback_error_message = $field_name."\n".get_odbc_error();
+				break;
+			}
+		}
+	}
+
 
 	//check if rollback needed
 	if($rollback_needed === true) {
