@@ -23,6 +23,7 @@ CREATE TABLE head_students (
 	}
 	?>
 	<input type='hidden' name='fields_count' id='fields_count' value='0'/>
+	<input type='hidden' name='foreign_keys_count' id='foreign_keys_count' value='0'/>
 
 	<table id="table_columns" class="results_table">
 		<tr>
@@ -38,9 +39,192 @@ CREATE TABLE head_students (
 			-->
 		</tr>
 	</table>
-	<!-- TODO "foreign key references" -->
+
 	<a href="javascript:create_table();" class="button right"><?php echo ($target==""?"Create table":"Edit table"); ?></a>
 	<a href="javascript:add_column();" class="button right">Add column</a>
+	<a href="javascript:add_foreign_key('');" class="button right" style="width: 150pt;">Add foreign key</a>
+
+	<br/>
+
+	<!-- TODO "foreign key references" -->
+
+	<h1 style="clear: both;">Foreign keys:</h1>
+	<div class="entries" id="foreign_keys">
+	</div>
+
+	<script>
+		<?php
+		$q = "SELECT table_name, column_name FROM ALL_TAB_COLUMNS WHERE table_name IN (SELECT table_name FROM user_tables)";
+		$colnames = odbc_exec($client->get_connection(), $q);
+		$arr = array();
+		while(odbc_fetch_row($colnames)) {
+			if(!array_key_exists(odbc_result($colnames, 1), $arr))
+				$arr[odbc_result($colnames, 1)] = array();
+			$arr[odbc_result($colnames, 1)][] = odbc_result($colnames, 2);
+		}
+		echo "var keysets = ".json_encode($arr).";\n";
+		?>
+
+		function add_option(element, value, name) {
+			var e = document.createElement("option");
+			e.value = value;
+			e.innerHTML = name;
+			element.appendChild(e);
+		}
+
+		function add_columns_options(element) {
+			if(element.disabled && element.innerHTML != "") return;
+			element.innerHTML = "";
+			var N = parseInt(document.getElementById("fields_count").value) + 1;
+			for(var i=1; i<N; ++i) {
+				var name = document.getElementById("column"+i+"_name").value;
+				add_option(element, name, name);
+			}
+		}
+
+		function add_other_columns_options(index) {
+			var element = document.getElementById("foreign_key_other_columns_"+index);
+			element.innerHTML = "";
+
+			var table_name = document.getElementById("foreign_key_table_"+index).value;
+			for(var i in keysets[table_name]) {
+				var name = keysets[table_name][i];
+				add_option(element, name, name);
+			}
+		}
+
+		function update_columns_options() {
+			var M = parseInt(document.getElementById("foreign_keys_count").value) + 1;
+			for(var i=1; i<M; ++i)
+				add_columns_options(document.getElementById("foreign_key_columns_"+i));
+		}
+
+		function fk_cb_change(index) {
+			var cb = document.getElementById("foreign_key_delete_"+index);
+			cb.value = (cb.checked?"true":"false");
+
+			var f = document.getElementById("foreign_key_changed_"+index);
+			f.value = "true";
+		}
+
+		function add_foreign_key(constraint_name) {
+			var N = parseInt(document.getElementById("foreign_keys_count").value) + 1;
+			document.getElementById("foreign_keys_count").value = N;
+
+			var child = document.createElement("div");
+			child.id = "foreign_key_" + N;
+			var form = document.createElement("p");
+			form.innerHTML = "Foreign key of ";
+			child.appendChild(form);
+
+			var cstrt = document.createElement("input");
+			cstrt.type = "hidden";
+			cstrt.name = "foreign_key_constraint_name[" + N + "]";
+			cstrt.id = "foreign_key_constraint_name_" + N;
+			cstrt.value = constraint_name;
+			form.appendChild(cstrt);
+
+			var chgd = document.createElement("input");
+			chgd.type = "hidden";
+			chgd.name = "foreign_key_changed[" + N + "]";
+			chgd.id = "foreign_key_changed_" + N;
+			chgd.value = (constraint_name == '' ? "true" : "false");
+			form.appendChild(chgd);
+
+			var this_columns = document.createElement("select");
+			this_columns.multiple = "multiple";
+			this_columns.name = "foreign_key_columns[" + N + "][]";
+			this_columns.id = "foreign_key_columns_" + N;
+			this_columns.disabled = (constraint_name != '');
+			add_columns_options(this_columns);
+			form.appendChild(this_columns);
+
+			form.innerHTML += " references the following column(s) of table ";
+
+			var table_selector = document.createElement("select");
+			table_selector.name = "foreign_key_table[" + N + "]";
+			table_selector.id = "foreign_key_table_" + N;
+			table_selector.value = "";
+			add_option(table_selector, "", "&lt;select table&gt;");
+			for (var key in keysets) {
+				add_option(table_selector, key, key);
+			}
+			table_selector.disabled = (constraint_name != '');
+			form.appendChild(table_selector);
+
+			form.innerHTML += ": ";
+
+			var that_columns = document.createElement("select");
+			that_columns.multiple = "multiple";
+			that_columns.name = "foreign_key_other_columns[" + N + "][]";
+			that_columns.id = "foreign_key_other_columns_" + N;
+			that_columns.disabled = (constraint_name != '');
+			form.appendChild(that_columns);
+
+			if (constraint_name != '') {
+				var cb = create_checkbox('foreign_key_delete_'+N, 'foreign_key_delete['+N+']', function() {fk_cb_change(N);});
+
+				var e = document.createElement("label");
+				e.innerHTML += "<br/><br/>Delete this constraint: ";
+				e.appendChild(cb);
+				form.appendChild(e);
+			}
+
+			var container = document.getElementById("foreign_keys");
+			container.appendChild(child);
+
+			table_selector = document.getElementById("foreign_key_table_"+N);
+			table_selector.onchange = function() { add_other_columns_options(N); };
+		}
+
+		function setup_foreign_key(index, table_name, from_columns, to_columns) {
+			var this_columns = document.getElementById("foreign_key_columns_"+index);
+			var opts = this_columns.options;
+			for(var opt, j = 0; opt = opts[j]; j++) {
+				opt.selected = (from_columns.indexOf(opt.value) != -1);
+			}
+
+			var table_selector = document.getElementById("foreign_key_table_"+index);
+			table_selector.value = table_name;
+
+			add_other_columns_options(index);
+
+			var that_columns = document.getElementById("foreign_key_other_columns_"+index);
+			opts = that_columns.options;
+			for(var opt, j = 0; opt = opts[j]; j++) {
+				opt.selected = (to_columns.indexOf(opt.value) != -1);
+			}
+		}
+
+	<?php
+		if($target!="") {
+			$q = get_foreign_keys_constraints_query($target);
+			$colnames = odbc_exec($client->get_connection(), $q);
+			$arr = array();
+			while(odbc_fetch_row($colnames)) {
+				if(!array_key_exists(odbc_result($colnames, 1), $arr)) {
+					$arr[odbc_result($colnames, 1)] = array();
+					$arr[odbc_result($colnames, 1)]['from'] = array();
+					$arr[odbc_result($colnames, 1)]['to_table'] = odbc_result($colnames, 3);
+					$arr[odbc_result($colnames, 1)]['to'] = array();
+				}
+				$arr[odbc_result($colnames, 1)]['from'][] = odbc_result($colnames, 2);
+				$arr[odbc_result($colnames, 1)]['to'][] = odbc_result($colnames, 4);
+			}
+
+			$idx = 1;
+			echo "window.onload = function() {";
+			foreach($arr as $constraint => $desc) {
+				echo "add_foreign_key('".$constraint."');";
+				echo "setup_foreign_key(".$idx.", '".$desc['to_table']."', ".json_encode($desc['from']).", ".json_encode($desc['to']).");";
+				$idx += 1;
+			}
+			echo "};";
+		}
+	?>
+	</script>
+
+	<!-- EOF FOREIGN -->
 </form>
 <div style="height: 60pt; clear: both;"></div>
 <script>
@@ -109,12 +293,13 @@ CREATE TABLE head_students (
 		return row;
 	}
 
-	function create_text_input(placeholder, id, name) {
+	function create_text_input(placeholder, id, name, onchange) {
 		var input = document.createElement('input');
 		input.type = 'text';
 		input.placeholder = placeholder;
 		input.id = id;
 		input.name = name;
+		input.onchange = onchange;
 		return input;
 	}
 
@@ -159,7 +344,7 @@ CREATE TABLE head_students (
 		document.getElementById("fields_count").value = N;
 		var el = document.getElementById("table_columns");
 		el.appendChild(create_table_row([
-			create_text_input('name', 'column'+N+'_name', 'column_name['+N+']'),
+			create_text_input('name', 'column'+N+'_name', 'column_name['+N+']', function() {update_columns_options();}),
 			create_type_select('column'+N+'_type', 'column_type['+N+']', function() {select_change(N);}),
 			create_number_input('column'+N+'_precision', 'column_precision['+N+']'),
 			create_number_input('column'+N+'_length', 'column_length['+N+']'),

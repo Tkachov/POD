@@ -8,10 +8,12 @@
 	//check POST
 	$table_name = null;
 	$fields_count = 0;
+	$foreign_keys_count = 0;
 
 	if($_POST) {
 		$table_name = totally_escape($_POST["table_name"]);
 		$fields_count = $_POST["fields_count"];
+		$foreign_keys_count = $_POST["foreign_keys_count"];
 	}
 
 	if($table_name == null) die("false: bad table_name");
@@ -287,6 +289,69 @@
 		}
 	}
 
+	//add or delete foreign keys
+	if($rollback_needed === false) {
+		/*
+		 * foreign_key_constraint_name[" + N + "]";
+			foreign_key_changed[" + N + "]";
+			foreign_key_columns[" + N + "][]";
+			foreign_key_table[" + N + "]";
+			foreign_key_other_columns[" + N + "][]";
+			foreign_key_delete['+N+']';
+		 */
+
+		for ($i = 1; $i <= $foreign_keys_count; ++$i) {
+			if(!isset($_POST["foreign_key_changed"]) || !isset($_POST["foreign_key_changed"][$i]) || $_POST["foreign_key_changed"][$i]!="true")
+				continue;
+
+			$constraint_name = "";
+			if(isset($_POST["foreign_key_constraint_name"]) && isset($_POST["foreign_key_constraint_name"][$i]) && $_POST["foreign_key_constraint_name"][$i]!="")
+				$constraint_name = totally_escape($_POST["foreign_key_constraint_name"][$i]);
+
+			if($constraint_name != "") {
+				//we can only delete such constraint
+				//let's check whether <delete> checkbox is set
+				if(isset($_POST["foreign_key_delete"]) && isset($_POST["foreign_key_delete"][$i]) && $_POST["foreign_key_delete"][$i]=="true") {
+					$fkq = "ALTER TABLE ".$table_name." DROP CONSTRAINT ".totally_escape($constraint_name).";";
+					if(odbc_exec($client->get_connection(), $fkq) === false) {
+						$rollback_needed = true;
+						$rollback_error_message = get_odbc_error();
+						break;
+					}
+					continue;
+				}
+			}
+
+			/*
+			 * ALTER TABLE "NEWTABLE" ADD
+			FOREIGN KEY ("DT")
+			REFERENCES "MARKS" ("MARK_DATE")
+			 */
+
+			$fkq = "ALTER TABLE \"".totally_escape($table_name)."\" ADD FOREIGN KEY (";
+			if(isset($_POST["foreign_key_columns"]) || !isset($_POST["foreign_key_columns"][$i])) {
+				$list = "";
+				foreach ($_POST["foreign_key_columns"][$i] as $cname)
+					if($list == "") $list = "\"" . $cname . "\"";
+					else $list .= ", \"" . $cname . "\"";
+				$fkq .= $list;
+			}
+			$fkq .= ") REFERENCES \"".totally_escape($_POST["foreign_key_table"][$i])."\" (";
+			if(isset($_POST["foreign_key_other_columns"]) || !isset($_POST["foreign_key_other_columns"][$i])) {
+				$list = "";
+				foreach ($_POST["foreign_key_other_columns"][$i] as $cname)
+					if($list == "") $list = "\"" . $cname . "\"";
+					else $list .= ", \"" . $cname . "\"";
+				$fkq .= $list;
+			}
+			$fkq .= ")";
+			if(odbc_exec($client->get_connection(), $fkq) === false) {
+				$rollback_needed = true;
+				$rollback_error_message = get_odbc_error();
+				break;
+			}
+		}
+	}
 
 	//check if rollback needed
 	if($rollback_needed === true) {

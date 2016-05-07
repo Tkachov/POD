@@ -8,10 +8,12 @@
 	//check POST
 	$table_name = null;
 	$fields_count = 0;
+	$foreign_keys_count = 0;
 
 	if($_POST) {
 		$table_name = totally_escape($_POST["table_name"]);
 		$fields_count = $_POST["fields_count"];
+		$foreign_keys_count = $_POST["foreign_keys_count"];
 	}
 
 	if($table_name == null) die("false: bad table_name");
@@ -22,7 +24,7 @@
 	//TODO: test table_name is one word or something
 
 	if(odbc_exec($client->get_connection(), "COMMIT;") === false) die(get_odbc_error());
-	if(odbc_exec($client->get_connection(), "SET TRANSACTION NAME 'edit_table_fields_transaction';") === false) die(get_odbc_error());
+	if(odbc_exec($client->get_connection(), "SET TRANSACTION NAME 'create_table_fields_transaction';") === false) die(get_odbc_error());
 	$rollback_needed = false;
 	$rollback_error_message = "";
 
@@ -135,7 +137,60 @@
 		}
 	}
 
+	//add foreign keys
+	if($rollback_needed === false) {
+		/*
+		 * foreign_key_constraint_name[" + N + "]";
+			foreign_key_changed[" + N + "]";
+			foreign_key_columns[" + N + "][]";
+			foreign_key_table[" + N + "]";
+			foreign_key_other_columns[" + N + "][]";
+			foreign_key_delete['+N+']';
+		 */
+
+		for ($i = 1; $i <= $foreign_keys_count; ++$i) {
+			if(!isset($_POST["foreign_key_changed"]) || !isset($_POST["foreign_key_changed"][$i]) || $_POST["foreign_key_changed"][$i]!="true")
+				continue;
+
+			//when creating table we can only create new foreign keys constraints
+
+			/*
+			 * ALTER TABLE "NEWTABLE" ADD
+			FOREIGN KEY ("DT")
+			REFERENCES "MARKS" ("MARK_DATE")
+			 */
+
+			$fkq = "ALTER TABLE \"".totally_escape($table_name)."\" ADD FOREIGN KEY (";
+			if(isset($_POST["foreign_key_columns"]) || !isset($_POST["foreign_key_columns"][$i])) {
+				$list = "";
+				foreach ($_POST["foreign_key_columns"][$i] as $cname)
+					if($list == "") $list = "\"" . $cname . "\"";
+					else $list .= ", \"" . $cname . "\"";
+				$fkq .= $list;
+			}
+			$fkq .= ") REFERENCES \"".totally_escape($_POST["foreign_key_table"][$i])."\" (";
+			if(isset($_POST["foreign_key_other_columns"]) || !isset($_POST["foreign_key_other_columns"][$i])) {
+				$list = "";
+				foreach ($_POST["foreign_key_other_columns"][$i] as $cname)
+					if($list == "") $list = "\"" . $cname . "\"";
+					else $list .= ", \"" . $cname . "\"";
+				$fkq .= $list;
+			}
+			$fkq .= ")";
+			if(odbc_exec($client->get_connection(), $fkq) === false) {
+				$rollback_needed = true;
+				$rollback_error_message = $fkq."\n\n".get_odbc_error();
+				break;
+			}
+		}
+	}
+
 	//check if rollback needed
+	if($rollback_needed === true) {
+		odbc_exec($client->get_connection(), "DROP TABLE ".totally_escape($table_name)); //we don't care whether it's successful
+		//but as table is not dropped after rollback, that might fix our problem
+	}
+
 	if($rollback_needed === true) {
 		if(odbc_exec($client->get_connection(), "ROLLBACK;") === false) {
 			die("Error occurred. Was unable rollback the transaction:\n\n".$rollback_error_message."\n\n".get_odbc_error());

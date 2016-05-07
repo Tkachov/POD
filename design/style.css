@@ -500,3 +500,14 @@ a.button:hover { background: #EEE; }
 	background: #EEE;
 	cursor: pointer;
 }
+
+/* edit table */
+
+#foreign_keys select {
+	min-width: 100pt;
+	vertical-align: middle;
+}
+
+#foreign_keys div + div {
+	border-top: 10px solid #CCCCCC;
+}
