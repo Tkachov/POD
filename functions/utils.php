@@ -30,7 +30,7 @@ function get_num_rows(client $client, $table_name) {
 }
 
 function get_columns_info_query($table_name) {
-	$q = "SELECT column_name, data_type, data_precision, data_length, nullable, CONSTRAINT_TYPE, column_id FROM ALL_TAB_COLUMNS acol LEFT JOIN (select CONSTRAINT_TYPE, COLUMN_NAME as c2, cols.TABLE_NAME as t2 from user_constraints uc inner join USER_IND_COLUMNS cols ON (uc.index_name = cols.index_name and uc.table_name = cols.table_name)) ON (column_name = c2 and table_name=t2) where table_name='".strtoupper(totally_escape($table_name))."' ORDER BY column_id ASC";
+	$q = "SELECT column_name, data_type, data_precision, data_length, data_scale, nullable, CONSTRAINT_TYPE, column_id FROM ALL_TAB_COLUMNS acol LEFT JOIN (select CONSTRAINT_TYPE, COLUMN_NAME as c2, cols.TABLE_NAME as t2 from user_constraints uc inner join USER_IND_COLUMNS cols ON (uc.index_name = cols.index_name and uc.table_name = cols.table_name)) ON (column_name = c2 and table_name=t2) where table_name='".strtoupper(totally_escape($table_name))."' ORDER BY column_id ASC";
 	return $q;
 }
 

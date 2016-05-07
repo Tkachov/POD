@@ -355,11 +355,14 @@ CREATE TABLE head_students (
 		select_change(N);
 	}
 
-	function setup_column(index, name, type, precision, length, not_null, constraint) {
+	function setup_column(index, name, type, precision, length, scale, not_null, constraint) {
+		var use_scale = false;
+		if(type == "NUMBER") use_scale = true;
+
 		document.getElementById('column'+index+'_name').value = name;
 		document.getElementById('column'+index+'_type').value = type;
 		document.getElementById('column'+index+'_precision').value = precision;
-		document.getElementById('column'+index+'_length').value = length;
+		document.getElementById('column'+index+'_length').value = (use_scale?scale:length);
 		document.getElementById('column'+index+'_not_null').checked = not_null;
 		document.getElementById('column'+index+'_not_null').value = (not_null?'true':'false');
 
@@ -379,13 +382,12 @@ CREATE TABLE head_students (
 	for(var i=0; i<5; ++i) add_column();
 <?php
 	} else {
-		$q = "SELECT column_name, data_type, data_precision, data_length, nullable, data_type_mod, column_id FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper(totally_escape($target))."' ORDER BY column_id ASC;";
 		$q = get_columns_info_query($target);
 		$colnames = odbc_exec($client->get_connection(), $q);
 		$idx = 1;
 		while(odbc_fetch_row($colnames)) {
 			echo "\tadd_column();\n";
-			echo "\tsetup_column(".$idx.", \"".odbc_result($colnames, 1)."\", \"".odbc_result($colnames, 2)."\", \"".odbc_result($colnames, 3)."\", \"".odbc_result($colnames, 4)."\", \"".odbc_result($colnames, 5)."\" == \"N\", \"".odbc_result($colnames, 6)."\");\n";
+			echo "\tsetup_column(".$idx.", \"".odbc_result($colnames, 1)."\", \"".odbc_result($colnames, 2)."\", \"".odbc_result($colnames, 3)."\", \"".odbc_result($colnames, 4)."\", \"".odbc_result($colnames, 5)."\", \"".odbc_result($colnames, 6)."\" == \"N\", \"".odbc_result($colnames, 7)."\");\n";
 			//if == N => NOT NULL present (true)
 			$idx += 1;
 		}

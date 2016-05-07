@@ -79,6 +79,7 @@ class client_login_info {
 					$port = strpos($_POST["IP"], $idx+1);
 				}
 				$DSN = "DRIVER={Oracle 12g ODBC driver};DSN=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=".$IP.")(PORT=".$port.")))(CONNECT_DATA=(SID=".$_POST["database"].")));UserID=".$_POST["username"].";Password=".$_POST["password"].";";
+				$DSN = "DRIVER={Oracle 12g ODBC driver};Dbq=".$IP.";Uid=".$_POST["username"].";Pwd=".$_POST["password"].";";
 				return new client_login_info($DSN, $_POST["username"], $_POST["password"]);
 			}
 
