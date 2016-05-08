@@ -1,5 +1,5 @@
 <?php
-	$query = "SELECT column_name, data_type, data_length, data_scale FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper($target)."';";
+	$query = "SELECT column_name, data_type, data_length, data_precision, data_scale FROM ALL_TAB_COLUMNS WHERE table_name = '".strtoupper($target)."';";
 	$result = odbc_exec($client->get_connection(), $query);
 ?>
 <div id="save_message" style="display: none;"></div>
@@ -12,7 +12,7 @@
 				$fields_count += 1;
 				echo "<th>".odbc_result($result, 1)."</th>";
 				if(odbc_result($result, 2) == "NUMBER") {
-					$types[] = odbc_result($result, 2)."(".odbc_result($result, 4).")"; //use scale instead
+					$types[] = odbc_result($result, 2)."(".odbc_result($result, 4).",".odbc_result($result, 5).")"; //use precision + scale instead
 				} else {
 					$types[] = odbc_result($result, 2)."(".odbc_result($result, 3).")";
 				}

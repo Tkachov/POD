@@ -129,7 +129,13 @@
 					if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." MODIFY ".$new_name." default '' NOT NULL;") === false) {
 						$rollback_needed = true;
 						$rollback_error_message = get_odbc_error();
-						break;
+
+						if(stripos($rollback_error_message, "column to be modified to NOT NULL is already NOT NULL") !== false) {
+							$rollback_needed = false;
+							$rollback_error_message = null;
+						} else {
+							break;
+						}
 					}
 				} else {
 					if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." MODIFY ".$new_name." NULL;") === false) {
@@ -242,6 +248,11 @@
 			if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." DROP PRIMARY KEY;") === false) {
 				$rollback_needed = true;
 				$rollback_error_message = get_odbc_error();
+
+				if(stripos($rollback_error_message, "Cannot drop nonexistent primary key") !== false) {
+					$rollback_needed = false;
+					$rollback_error_message = null;
+				}
 			}
 		}
 	}
@@ -262,7 +273,7 @@
 		}
 
 		if($drop_primary_key && $fields_list != "") {
-			if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." ADD CONSTRAINT ".$table_name."_primary_key_constraint PRIMARY KEY (".$fields_list.");") === false) {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE ".$table_name." ADD CONSTRAINT ".$table_name."_PKCNSTRT PRIMARY KEY (".$fields_list.");") === false) {
 				$rollback_needed = true;
 				$rollback_error_message = $fields_list."\n".get_odbc_error();
 			}

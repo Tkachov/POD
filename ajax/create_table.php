@@ -130,7 +130,7 @@
 		}
 
 		if($fields_list != "") {
-			if(odbc_exec($client->get_connection(), "ALTER TABLE ".totally_escape($table_name)." ADD CONSTRAINT ".totally_escape($table_name)."_primary_key_constraint PRIMARY KEY (".$fields_list.");") === false) {
+			if(odbc_exec($client->get_connection(), "ALTER TABLE ".totally_escape($table_name)." ADD CONSTRAINT ".totally_escape($table_name)."_PKCNSTRT PRIMARY KEY (".$fields_list.");") === false) {
 				$rollback_needed = true;
 				$rollback_error_message = get_odbc_error();
 			}
